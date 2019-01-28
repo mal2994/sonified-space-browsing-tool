@@ -1,5 +1,5 @@
 #include <iostream>
-#include <stdlib.h>	//is this cpp?
+#include <cstdlib>
 #include "rabbit.h"
 #include "user.h"
 
@@ -7,24 +7,41 @@ using namespace std;
 
 int main(void)
 {
-	// user teleport
+	//create user
 	User User1;
-	cout << "User Initialized." << endl;
-	cout << "coords: " << User1.getTrueX() << ", " << User1.getTrueY() << endl;
+	cout << "User Created." << "\n";
+	cout << "coords: " << User1.getTrueX() << ", " << User1.getTrueY() << "\n";
+
+	//create rabbits
+	Rabbit AllRabbits[TOTALRABBITS];
+
+	// user teleport
 	User1.setTrueX(5);
 	User1.setTrueY(10);
-	cout << "User teleported." << endl;
-	cout << "coords: " << User1.getTrueX() << ", " << User1.getTrueY() << endl;
+	cout << "User teleported." << "\n";
+	cout << "coords: " << User1.getTrueX() << ", " << User1.getTrueY() << "\n";
 
-	// rabbit create
-	Rabbit Rabbit1;
-	Rabbit1.setTrueX(10);
-	Rabbit1.setTrueY(20);
-	Rabbit1.calcDistanceToUser(User1.getTrueX(), User1.getTrueY());
-	cout << "Rabbit1 Initialized." << endl;
-	cout << "coords: " << Rabbit1.getTrueX() << ", " << Rabbit1.getTrueY() << endl;
-	cout << "distance to user: " << Rabbit1.getDistanceToUser() << endl;
+	// new rabbit
+	AllRabbits[0].setTrueX(5);
+	AllRabbits[0].setTrueY(5);
+	AllRabbits[0].calcDistanceToUser(User1.getTrueX(), User1.getTrueY());
+	cout << "AllRabbits[0] Created." << "\n";
+	cout << "coords: " << AllRabbits[0].getTrueX() << ", " << AllRabbits[0].getTrueY() << "\n";
+	cout << "distance to user: " << AllRabbits[0].getDistanceToUser() << "\n";
 
+	// create disc
+	User1.getDisc1().activate(true);
+	User1.getDisc1().setRadii(8,2);
+	cout << "Disc created." << "\n";
+	cout << "radius1: " << User1.getDisc1().getRadius1() << "\n";
+	cout << "radius2: " << User1.getDisc1().getRadius2() << "\n";
+	cout << "activated: " << User1.getDisc1().isActivated() << "\n";
+	// activate (included in creating a disc)
+	cout << "AllRabbits[0] activated? " << AllRabbits[0].isActivated() << "\n";
+	User1.activateInsideRabbits(AllRabbits);
+	cout << "AllRabbits[0] activated? " << AllRabbits[0].isActivated() << "\n";
 
+	
+	
 	return 0;
 }
