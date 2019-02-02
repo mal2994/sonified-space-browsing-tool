@@ -13,6 +13,8 @@ Rabbit::Rabbit()
    	activated = false;
 }
 
+Rabbit::~Rabbit(){}
+
 // MODIFICATION MEMBER FUNCTIONS
 void Rabbit::setTrueX(int a)
 {

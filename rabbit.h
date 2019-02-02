@@ -7,7 +7,7 @@ class Rabbit {
 public:
    // CONSTRUCTOR & DESTRUCTOR
    Rabbit();
-   //~User();
+   ~Rabbit();
 
    // MODIFICATION MEMBER FUNCTIONS
    void setTrueX(int);

@@ -1,11 +1,24 @@
-#include <iostream>
+/*#include <iostream>
 #include <cstdlib>
 #include "rabbit.h"
 #include "user.h"
+#include "touch.h"*/
+#include "application.h"
+#include <allegro5/allegro.h>
 
 using namespace std;
 
-int main(void)
+int main()
+{
+    Application *application = new Application();
+    application->init();
+    application->createWindow(30.0, 640, 480);
+    application->appLoop();
+
+    return 0;
+}
+
+/*int appLoop(void)
 {
 	//create user
 	User User1;
@@ -41,7 +54,10 @@ int main(void)
 	User1.activateInsideRabbits(AllRabbits);
 	cout << "AllRabbits[0] activated? " << AllRabbits[0].isActivated() << "\n";
 
-	
-	
+	//wait for touch
+	while(1)
+	{
+		touch_main();
+	}
 	return 0;
-}
+}*/

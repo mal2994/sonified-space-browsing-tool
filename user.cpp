@@ -10,6 +10,8 @@ User::User()
     truex = 0;
    	truey = 0;
 }
+// DESTRUCTOR
+User::~User(){}
 
 /* MODIFICATION MEMBER FUNCTIONS */
 void User::setTrueX(int a)
@@ -66,6 +68,8 @@ Disc::Disc()
 	radius2 = -1;	//bigger radius
 	activated = 0;
 }
+
+Disc::~Disc(){}
 
 void Disc::activate(bool flag)
 {
