@@ -7,9 +7,11 @@ using namespace std;
 /* CONSTRUCTOR */
 User::User()
 {
-    truex = 0;
-   	truey = 0;
+   truex = 0;
+   truey = 0;
 }
+// DESTRUCTOR
+User::~User(){}
 
 /* MODIFICATION MEMBER FUNCTIONS */
 void User::setTrueX(int a)
@@ -20,6 +22,13 @@ void User::setTrueX(int a)
 void User::setTrueY(int a)
 {
 	truey = a;
+}
+
+void User::teleport(int x, int y){
+	setTrueX(x);
+	setTrueY(y);
+	cout << "User teleported." << "\n";
+	cout << "coords: " << getTrueX() << ", " << getTrueY() << "\n";
 }
 
 /* CONSTANT MEMBER FUNCTIONS */
@@ -66,6 +75,8 @@ Disc::Disc()
 	radius2 = -1;	//bigger radius
 	activated = 0;
 }
+
+Disc::~Disc(){}
 
 void Disc::activate(bool flag)
 {
