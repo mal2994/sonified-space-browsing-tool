@@ -5,7 +5,7 @@
 class Disc {
 public:
    Disc();
-
+	~Disc();
    /* MODIFICATION MEMBER FUNCTIONS */
    void setRadius1(int);
    void setRadius2(int);
@@ -26,11 +26,12 @@ private:
 class User {
 public:
    User();
-   //~User();
+   ~User();
 
    /* MODIFICATION MEMBER FUNCTIONS */
    void setTrueX(int);
    void setTrueY(int);
+	void teleport(int, int);
 
    /* CONSTANT MEMBER FUNCTIONS */
    int getTrueX();

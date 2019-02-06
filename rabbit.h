@@ -7,7 +7,7 @@ class Rabbit {
 public:
    // CONSTRUCTOR & DESTRUCTOR
    Rabbit();
-   //~User();
+   ~Rabbit();
 
    // MODIFICATION MEMBER FUNCTIONS
    void setTrueX(int);
@@ -27,6 +27,7 @@ private:
    int truey;
    int distance_to_user;
    bool activated;
+	bool is_fox;
 };
 
 
