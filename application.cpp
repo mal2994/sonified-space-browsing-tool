@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdlib>
+#include <cmath>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
@@ -35,10 +36,101 @@ int Application::which_finger(int id, int num, Touch touches[])
 }
 
 gesture_t Application::id_gesture(){
-	//touches[i].
-	gesture_t x = TAP_GESTURE; // OK
+	int distance1 = -1, distance2 = -1;
+	bool no_center = true;
+	float angle1 = 0, angle2 = 0;
 	
-	return x;
+	
+	for(int i = 0;i<3;i++)//num_touches;i++)
+	{
+		printf("[preg]id = %d, x = %d, y = %d \n",touches[i].id,touches[i].x,touches[i].y);
+	}
+	
+	
+	//touches[i].
+	//default to invalid
+	gesture_t x = INVALID_GESTURE;
+	//if one finger, its a tap. touches indexed from 0.
+	if(num_touches == 0) {
+		//gesture_t x = TAP_GESTURE; // OK
+		return TAP_GESTURE;
+	}
+	
+	//if two fingers...invalid for now. this would be pinch or pull.
+	if(num_touches == 1) {
+		cout << "two fingers \n";
+		return INVALID_GESTURE;
+	}
+	
+	//if three fingers it is either a disc or wedge 
+	if(num_touches == 2) {
+		cout << "three fingers\n";
+		//first finger must be in the center 
+		///381, 226
+		for(int i=0;i<3;i++)
+		{
+			//if one finger is at the center of the screen, it can be a valid disc or wedge
+			//						 400						  400							  200 						200
+			if((fingers[i].x < 500 && fingers[i].x > 300) && (fingers[i].y < 300 && fingers[i].y > 100))
+			{
+				cout << "you have at least one finger on the center of the screen \n";
+				/*int wow;
+				cout << "num_touches " << num_touches << " i " << i << " touches[i].x " << touches[i].x << "touches[i].y" << touches[i].y << " \n";
+				cin >> wow;*/
+				
+				//get radii
+				distance1 = abs(sqrt(pow(fingers[i].x - fingers[i+1%3].x, 2) + pow(fingers[i].y - fingers[i+1%3].y, 2))); //this is an integer, not a double. we are rounding.
+				distance2 = abs(sqrt(pow(fingers[i].x - fingers[i+2%3].x, 2) + pow(fingers[i].y - fingers[1+2%3].y, 2))); //this is an integer, not a double. we are rounding.
+				
+				//and get angles
+				angle1 = acos((fingers[i+1%3].x-400)/(sqrt(pow(fingers[i+1%3].x-400, 2) + pow(fingers[i+1%3].y-200, 2))))*(180.0/3.141592653589793238463);
+				angle2 = acos((fingers[i+2%3].x-400)/(sqrt(pow(fingers[i+2%3].x-400, 2) + pow(fingers[i+2%3].y-200, 2))))*(180.0/3.141592653589793238463);
+				//cout << "fingers[i+1%3].x " << fingers[i+1%3].x << "
+				if(fingers[i+1%3].y < 200)
+					angle1 = (angle1*-1)+360;
+				if(fingers[i+2%3].y < 200)
+					angle2 = (angle2*-1)+360;
+				no_center = false;
+			}
+		}
+		//we have looked through all of the fingers and found none of them were at the center:
+		if(no_center)
+		{
+			cout << "you have no fingers at the center of the screen.\n";
+			return INVALID_GESTURE;
+		}else	//one of the fingers was at the center 
+		{
+			//determine if disc or wedge
+			if(abs(angle1-angle2)<40)//<20) //&& abs(distance1-distance2)>100
+			{
+				cout << "angles are similar...their difference is " << abs(angle1-angle2) << "\n";
+				cout << "angle1 " << angle1 << " angle2 " << angle2 << " distance1 " << distance1 << " distance2 " << distance2 << "\n";
+				cout << "angle difference " << abs(angle1-angle2) << " distance difference " << abs(distance1-distance2) << "\n";
+				return DISC_GESTURE;
+			}
+			else
+			{
+				cout << "angles are not similar...their difference is " << abs(angle1-angle2) << "\n";
+				cout << "angle1 " << angle1 << " angle2 " << angle2 << " distance1 " << distance1 << " distance2 " << distance2 << "\n";
+			}
+			if(abs(angle1-angle2)>10 && abs(distance1-distance2)<100) //angles in degrees, distances in pixels
+			{
+				cout << "angles are not similar but distance is simlar.\n";
+				cout << "angles are not similar...their difference is " << abs(angle1-angle2) << "\n";
+				cout << "distances are not similar...their difference is " << abs(distance1-distance2) << "\n";
+				cout << "angle1 " << angle1 << " angle2 " << angle2 << " distance1 " << distance1 << " distance2 " << distance2 << "\n";
+				cout << "angle difference " << abs(angle1-angle2) << " distance difference " << abs(distance1-distance2) << "\n";
+				return WEDGE_GESTURE;
+			}
+			else
+			{
+				cout << "angles are not similar and distances are not similar.\n";
+				cout << "angle1 " << angle1 << " angle2 " << angle2 << " distance1 " << distance1 << " distance2 " << distance2 << "\n";
+			}
+		}
+	}
+	
+	return INVALID_GESTURE;
 }
 
 int Application::touch_main()
@@ -59,7 +151,7 @@ int Application::touch_main()
 			
 			//touch events
 			if(accept_more_touches){ //slow down the input rate..only touch events in this if 
-				case ALLEGRO_EVENT_TOUCH_BEGIN: {
+				case ALLEGRO_EVENT_TOUCH_BEGIN: { //modify to do motion gestures 
 					int i = num_touches;
 					//dont store more touches than you can have:
 					if (num_touches < MAX_TOUCHES) {
@@ -67,6 +159,8 @@ int Application::touch_main()
 						touches[i].x = event.touch.x;
 						touches[i].y = event.touch.y;
 						num_touches++;
+						fingers[event.touch.id].x = event.touch.x;
+						fingers[event.touch.id].y = event.touch.y;
 					}
 					break;
 				}
@@ -80,10 +174,12 @@ int Application::touch_main()
 					break;
 				}
 				case ALLEGRO_EVENT_TOUCH_MOVE: {
-					int i = which_finger(event.touch.id, num_touches, touches);
+					int i = which_finger(event.touch.id, num_touches, touches); //
 					if (i >= 0) {
 						touches[i].x = event.touch.x;
 						touches[i].y = event.touch.y;
+						fingers[event.touch.id].x = event.touch.x;
+						fingers[event.touch.id].y = event.touch.y;
 					}
 					break;
 				}
@@ -102,7 +198,10 @@ int Application::touch_main()
 			
 			//display events
 			case ALLEGRO_EVENT_DISPLAY_CLOSE:
-				///quit = true; why does this not work!	
+				if(measureNumber > 2){ //this event happens on window open (even though it shouldnt), even if you dont hit close, so put a timer on it
+				//	quit = true; //why does this not work!
+				//	cout << "you decided to quit  \n"; 
+				}
 				break;
 			case ALLEGRO_EVENT_DISPLAY_HALT_DRAWING:
 				background = true;
@@ -117,12 +216,6 @@ int Application::touch_main()
 				break;
 			
 		}
-	
-		/* print all touches:
-		for(int i = 0;i<=num_touches-1;i++)
-		{
-			printf("id = %d, x = %d, y = %d \n",touches[i].id,touches[i].x,touches[i].y);
-		}*/
 		
 		//when they lift up their fingers, that's the gesture we're locking in and we're not accepting more touches for a period of time 
 		if(!accept_more_touches && !gesture_processed){
@@ -131,14 +224,32 @@ int Application::touch_main()
 			{
 				case TAP_GESTURE:
 					cout << "tap.\n";
-					printf("id = %d, x = %d, y = %d \n",touches[0].id,touches[0].x,touches[0].y);
+					//printf("id = %d, x = %d, y = %d \n",touches[0].id,touches[0].x,touches[0].y);
 					User1.teleport(touches[0].x,touches[0].y);
 					gesture_processed = true;
 					break;
-				/*case DISC_GESTURE:
+				case DISC_GESTURE:
+					cout << "disc\n";
+					gesture_processed = true;
+					break;
 				case WEDGE_GESTURE:
-				case INVALID_GESTURE: */
+					cout << "wedge\n";
+					gesture_processed = true;
+					break;
+				case INVALID_GESTURE:
+					cout << "invalid\n";
+					gesture_processed = true;
+					break;
+				
 			}
+			
+		for(int i = 0;i<3;i++)//num_touches;i++)
+		{
+			printf("[postmain][touches]id = %d, x = %d, y = %d \n",touches[i].id,touches[i].x,touches[i].y);
+			printf("[postmain][fingers]id = %d, x = %d, y = %d \n",fingers[i].id,fingers[i].x,fingers[i].y);
+		}
+			
+			
 		}
 	} //end while 
    return 0;
@@ -185,6 +296,9 @@ int Application::init()
 	if (!display) {
 		return -1;
 	}
+	///fullscreen
+	al_get_display_mode(al_get_num_display_modes() - 1, &disp_data);
+   al_set_new_display_flags(ALLEGRO_FULLSCREEN);
 	//initialize allegro primitives
 	al_init_primitives_addon();
    if (!al_install_touch_input()) {

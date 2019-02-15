@@ -122,3 +122,64 @@ bool Disc::isActivated()
 {
 	return activated;
 }
+
+Wedge& User::getWedge1()
+{
+	return Wedge1;
+}
+
+Wedge::Wedge()
+{
+	angle1 = -1;	//smaller radius
+	angle2 = -1;	//bigger radius
+	activated = 0;
+}
+
+Wedge::~Wedge(){}
+
+void Wedge::activate(bool flag)
+{
+	activated = flag;
+}
+
+void Wedge::setAngle1(int a)
+{
+	angle1 = a;
+}
+
+void Wedge::setAngle2(int a)
+{
+	angle2 = a;
+}
+
+void Wedge::setAngles(int a, int b)
+{
+	if(a < b)
+	{
+//		cout << "a<b" << endl;
+		angle1 = a;
+		angle2 = b;
+	}else
+	{
+//		cout << "a>b" << endl;
+		angle1 = b;
+		angle2 = a;
+	}
+}
+
+int Wedge::getAngle1()
+{
+	return angle1;
+}
+
+int Wedge::getAngle2()
+{
+	return angle2;
+}
+
+bool Wedge::isActivated()
+{
+	return activated;
+}
+
+
