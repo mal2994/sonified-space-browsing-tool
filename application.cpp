@@ -8,8 +8,22 @@
 #include "user.h"
 //#include "touch.h"
 #include "application.h"
+//#include "ssbtsound.h" //redefinition
+#include <csound/csound.h>
+#include <thread>
+#include <signal.h>		// for sigaction
+#include <unistd.h>		// for sigaction
 
 using namespace std;
+
+void createAndCompile(float);
+void startAndPerform(void);
+void my_handler(int);
+
+CSOUND *csound;
+thread t1;
+thread t2;
+bool cswaitstate = false;
 
 void Application::draw_touches(int num, Touch touches[])
 {
@@ -36,108 +50,62 @@ int Application::which_finger(int id, int num, Touch touches[])
 }
 
 gesture_t Application::id_gesture(){
-	int distance1 = -1, distance2 = -1;
+	int radius1 = -1, radius2 = -1;
 	bool no_center = true;
 	float angle1 = 0, angle2 = 0;
 	
-	
-	for(int i = 0;i<3;i++)//num_touches;i++)
-	{
-		printf("[preg]id = %d, x = %d, y = %d \n",touches[i].id,touches[i].x,touches[i].y);
-	}
-	
-	
-	//touches[i].
-	//default to invalid
-	gesture_t x = INVALID_GESTURE;
-	//if one finger, its a tap. touches indexed from 0.
-	if(num_touches == 0) {
-		//gesture_t x = TAP_GESTURE; // OK
+	//if one finger (0based-numbering), its a tap.
+	if(num_touches == 0)
 		return TAP_GESTURE;
-	}
 	
 	//if two fingers...invalid for now. this would be pinch or pull.
-	if(num_touches == 1) {
-		cout << "two fingers \n";
+	if(num_touches == 1)
 		return INVALID_GESTURE;
-	}
 	
 	//if three fingers it is either a disc or wedge 
 	if(num_touches == 2) {
-		cout << "three fingers\n";
-		//first finger must be in the center 
-		///381, 226
-		for(int i=0;i<3;i++)
-		{
+		for(int i=0;i<3;i++)	{ //check all fingers
+		
 			//if one finger is at the center of the screen, it can be a valid disc or wedge
 			//						 400						  400							  200 						200
-			if((fingers[i].x < 500 && fingers[i].x > 300) && (fingers[i].y < 300 && fingers[i].y > 100))
-			{
+			if((fingers[i].x < 500 && fingers[i].x > 300) && (fingers[i].y < 300 && fingers[i].y > 100)){
+				no_center = false;
 				cout << "you have at least one finger on the center of the screen \n";
-				/*int wow;
-				cout << "num_touches " << num_touches << " i " << i << " touches[i].x " << touches[i].x << "touches[i].y" << touches[i].y << " \n";
-				cin >> wow;*/
 				
-				//get radii
-				distance1 = abs(sqrt(pow(fingers[i].x - fingers[i+1%3].x, 2) + pow(fingers[i].y - fingers[i+1%3].y, 2))); //this is an integer, not a double. we are rounding.
-				distance2 = abs(sqrt(pow(fingers[i].x - fingers[i+2%3].x, 2) + pow(fingers[i].y - fingers[1+2%3].y, 2))); //this is an integer, not a double. we are rounding.
+				//get radii with absolute value of distance formula
+				radius1 = abs(sqrt(pow(fingers[i].x - fingers[i+1%3].x, 2) + pow(fingers[i].y - fingers[i+1%3].y, 2))); //this is an integer, not a double. we are rounding.
+				radius2 = abs(sqrt(pow(fingers[i].x - fingers[i+2%3].x, 2) + pow(fingers[i].y - fingers[1+2%3].y, 2))); //this is an integer, not a double. we are rounding.
 				
-				//and get angles
+				//get angles with some trig unit circle type stuff, also convert from radians to degress.
 				angle1 = acos((fingers[i+1%3].x-400)/(sqrt(pow(fingers[i+1%3].x-400, 2) + pow(fingers[i+1%3].y-200, 2))))*(180.0/3.141592653589793238463);
 				angle2 = acos((fingers[i+2%3].x-400)/(sqrt(pow(fingers[i+2%3].x-400, 2) + pow(fingers[i+2%3].y-200, 2))))*(180.0/3.141592653589793238463);
-				//cout << "fingers[i+1%3].x " << fingers[i+1%3].x << "
-				if(fingers[i+1%3].y < 200)
-					angle1 = (angle1*-1)+360;
-				if(fingers[i+2%3].y < 200)
-					angle2 = (angle2*-1)+360;
-				no_center = false;
+
+				//acos returns 0-180 for an entire circle. use reflection and offset to get us the 180-360 range in quadrants III and IV
+				if(fingers[i+1%3].y < 200) angle1 = (angle1*-1)+360;
+				if(fingers[i+2%3].y < 200) angle2 = (angle2*-1)+360;
 			}
 		}
 		//we have looked through all of the fingers and found none of them were at the center:
-		if(no_center)
-		{
+		if(no_center){
 			cout << "you have no fingers at the center of the screen.\n";
 			return INVALID_GESTURE;
-		}else	//one of the fingers was at the center 
-		{
+		}else{	//one of the fingers was at the center 
 			//determine if disc or wedge
-			if(abs(angle1-angle2)<40)//<20) //&& abs(distance1-distance2)>100
-			{
-				cout << "angles are similar...their difference is " << abs(angle1-angle2) << "\n";
-				cout << "angle1 " << angle1 << " angle2 " << angle2 << " distance1 " << distance1 << " distance2 " << distance2 << "\n";
-				cout << "angle difference " << abs(angle1-angle2) << " distance difference " << abs(distance1-distance2) << "\n";
+			if(abs(angle1-angle2)<40)
 				return DISC_GESTURE;
-			}
-			else
-			{
-				cout << "angles are not similar...their difference is " << abs(angle1-angle2) << "\n";
-				cout << "angle1 " << angle1 << " angle2 " << angle2 << " distance1 " << distance1 << " distance2 " << distance2 << "\n";
-			}
-			if(abs(angle1-angle2)>10 && abs(distance1-distance2)<100) //angles in degrees, distances in pixels
-			{
-				cout << "angles are not similar but distance is simlar.\n";
-				cout << "angles are not similar...their difference is " << abs(angle1-angle2) << "\n";
-				cout << "distances are not similar...their difference is " << abs(distance1-distance2) << "\n";
-				cout << "angle1 " << angle1 << " angle2 " << angle2 << " distance1 " << distance1 << " distance2 " << distance2 << "\n";
-				cout << "angle difference " << abs(angle1-angle2) << " distance difference " << abs(distance1-distance2) << "\n";
+			if(abs(angle1-angle2)>10 && abs(radius1-radius2)<100) //angles in degrees, radii in pixels
 				return WEDGE_GESTURE;
-			}
-			else
-			{
-				cout << "angles are not similar and distances are not similar.\n";
-				cout << "angle1 " << angle1 << " angle2 " << angle2 << " distance1 " << distance1 << " distance2 " << distance2 << "\n";
-			}
 		}
 	}
-	
 	return INVALID_GESTURE;
 }
 
 int Application::touch_main()
 {
+	/*ssbtsound.*///createAndCompile(22.5); 
    while (!quit){ 
 		// only draw when all other events are complete
-		if (!background && al_is_event_queue_empty(queue)) { // background is true when android/ios user switches apps.
+		if (!background && al_is_event_queue_empty(queue)) { 	  // background is true when android/ios user switches apps.
 			al_clear_to_color(al_map_rgb(255, 255, 255));
 			draw_touches(num_touches, touches);
 			al_flip_display();
@@ -150,17 +118,16 @@ int Application::touch_main()
 		switch (event.type) {
 			
 			//touch events
-			if(accept_more_touches){ //slow down the input rate..only touch events in this if 
-				case ALLEGRO_EVENT_TOUCH_BEGIN: { //modify to do motion gestures 
+			if(accept_more_touches){ 										// slow down the input rate..only touch events in this if 
+				case ALLEGRO_EVENT_TOUCH_BEGIN: { 						// modify to do motion gestures todo
 					int i = num_touches;
-					//dont store more touches than you can have:
-					if (num_touches < MAX_TOUCHES) {
-						touches[i].id = event.touch.id;
+					if (num_touches < MAX_TOUCHES) {						// num_touches can go up to 7 because of the touch screen spec
+						touches[i].id = event.touch.id;					// these three lines log touches chronologically
 						touches[i].x = event.touch.x;
 						touches[i].y = event.touch.y;
-						num_touches++;
-						fingers[event.touch.id].x = event.touch.x;
+						fingers[event.touch.id].x = event.touch.x;	// these two lines log touches by finger 
 						fingers[event.touch.id].y = event.touch.y;
+						num_touches++;
 					}
 					break;
 				}
@@ -170,11 +137,12 @@ int Application::touch_main()
 						touches[i] = touches[num_touches - 1];
 						num_touches--;
 						accept_more_touches = false; // this is reset by a timer event later in this function 
+						createAndCompile(22.5);
 					}
 					break;
 				}
 				case ALLEGRO_EVENT_TOUCH_MOVE: {
-					int i = which_finger(event.touch.id, num_touches, touches); //
+					int i = which_finger(event.touch.id, num_touches, touches);
 					if (i >= 0) {
 						touches[i].x = event.touch.x;
 						touches[i].y = event.touch.y;
@@ -191,14 +159,21 @@ int Application::touch_main()
 				if (event.timer.source == metronome)
 				{
 					cout << "measure: " << measureNumber++ << "\n";
+																								//if(accept_more_touches == false){ //this means they put in a touch and we need to recompile the csound 
+					if(measureNumber>1 && cswaitstate==false){
+						cswaitstate = true;
+						thread t1(startAndPerform);
+					}
+					
+																								//}
 					accept_more_touches = true;
 					gesture_processed = false;
 				}
 			}
 			
 			//display events
-			case ALLEGRO_EVENT_DISPLAY_CLOSE:
-				if(measureNumber > 2){ //this event happens on window open (even though it shouldnt), even if you dont hit close, so put a timer on it
+			case ALLEGRO_EVENT_DISPLAY_CLOSE: // this event triggers OVER AND OVER AND OVER! idk what the problem is!
+				if(measureNumber > 2){			 // tried to fix it with a timer. NOPE.
 				//	quit = true; //why does this not work!
 				//	cout << "you decided to quit  \n"; 
 				}
@@ -243,11 +218,11 @@ int Application::touch_main()
 				
 			}
 			
-		for(int i = 0;i<3;i++)//num_touches;i++)
+		/*for(int i = 0;i<3;i++)//num_touches;i++)
 		{
 			printf("[postmain][touches]id = %d, x = %d, y = %d \n",touches[i].id,touches[i].x,touches[i].y);
 			printf("[postmain][fingers]id = %d, x = %d, y = %d \n",fingers[i].id,fingers[i].x,fingers[i].y);
-		}
+		}*/
 			
 			
 		}
@@ -270,6 +245,7 @@ Application::Application()
 	gesture_processed = false;
 	measureNumber = 0;
 	currentGesture = INVALID_GESTURE; //have to initialize it to something or other 
+	//Ssbtsound ssbtsound;
 }
 
 Application::~Application()
@@ -355,30 +331,137 @@ void Application::appLoop(void)
 	// user teleport
 	//User1.teleport(5,10);
 
-	// new rabbit
+	// new rabbits
 	AllRabbits[0].setTrueX(5);
 	AllRabbits[0].setTrueY(5);
 	AllRabbits[0].calcDistanceToUser(User1.getTrueX(), User1.getTrueY());
 	cout << "AllRabbits[0] Created." << "\n";
 	cout << "coords: " << AllRabbits[0].getTrueX() << ", " << AllRabbits[0].getTrueY() << "\n";
 	cout << "distance to user: " << AllRabbits[0].getDistanceToUser() << "\n";
-
-	// create disc
-	User1.getDisc1().activate(true);
-	User1.getDisc1().setRadii(8,2);
-	cout << "Disc created." << "\n";
-	cout << "radius1: " << User1.getDisc1().getRadius1() << "\n";
-	cout << "radius2: " << User1.getDisc1().getRadius2() << "\n";
-	cout << "activated: " << User1.getDisc1().isActivated() << "\n";
-	// activate (included in creating a disc)
-	cout << "AllRabbits[0] activated? " << AllRabbits[0].isActivated() << "\n";
-	User1.activateInsideRabbits(AllRabbits);
-	cout << "AllRabbits[0] activated? " << AllRabbits[0].isActivated() << "\n";
-
-	//wait for touch
-	//while(1) loop forever within the function instead please.
 	
-		touch_main();
+	AllRabbits[1].setTrueX(100);
+	AllRabbits[1].setTrueY(300);
+	AllRabbits[1].calcDistanceToUser(User1.getTrueX(), User1.getTrueY());
+	cout << "AllRabbits[0] Created." << "\n";
+	cout << "coords: " << AllRabbits[1].getTrueX() << ", " << AllRabbits[1].getTrueY() << "\n";
+	cout << "distance to user: " << AllRabbits[1].getDistanceToUser() << "\n";
+
+	User1.activateInsideRabbits(AllRabbits);
+	
+
+	struct sigaction sigIntHandler;
+	sigIntHandler.sa_handler = my_handler;
+	sigemptyset(&sigIntHandler.sa_mask);
+	sigIntHandler.sa_flags = 0;
+	sigaction(SIGINT, &sigIntHandler, NULL);
+	createAndCompile(22.5);
+	touch_main();
+
 	
 	//return 0;
+}
+void startAndPerform()
+{
+	int result = 0;
+	//while(1) createAndCompile(22.5); putting this in apploop initialize
+	cout << "startAndPerform() csoundPerformKsmps\n";
+	result = csoundStart(csound);
+	result = 0;
+	//while (result == 0)	result = csoundPerformKsmps(csound);
+	while (1) {
+		result = csoundPerformKsmps(csound);
+		if (result != 0) {
+		  break;
+		}
+	}
+	cout << "startAndPerform() result != 0, join thread.\n";
+	cswaitstate = false;
+	t1.join();
+}
+
+void createAndCompile(float kazim) //now removing play code 7:49 3-2-19
+{
+// TODO: put this in a class
+// BEGIN SSBTSOUND "CLASS"
+//void createAndCompile(float);
+//void startAndPerform(void);
+char *csd_text1 =
+"	<CsoundSynthesizer>\n"
+"	<CsOptions>\n"
+"	; combined gen01.csd and ../csound-vbaplsinit/test.csd \n"
+"	; Select audio/midi flags here according to platform \n"
+"	-odac     ;;;realtime audio out \n"
+"	;-iadc    ;;;uncomment -iadc if realtime audio input is needed too \n"
+"	; For Non-realtime ouput leave only the line below: \n"
+"	; -o gen01.wav -W ;;; for file output any platform \n"
+"	</CsOptions>\n"
+"	<CsInstruments>\n"
+"	sr = 44100 \n"
+"	ksmps = 16\n"
+"	nchnls = 8 \n"
+"	0dbfs  = 1\n"
+"	vbaplsinit 2, 8, 0, 72, 144, 216, 288, 0, 0, 0\n"
+"	instr 1	;plays deferred and non-deferred sounds with loscil\n"
+"	ifn = p4\n"
+"	ibas = 1\n"
+"	asig loscil 1, 1, ifn, ibas\n"
+"	kazim=90\n"
+"	a1,a2,a3,a4,a5,a6,a7,a8 vbap8  asig, kazim, 0, 1        ;change azimuth of soundsource\n"
+"		  outo a1,a2,a3,a4,a5,a6,a7,a8\n"
+"	endin\n"
+"	instr 2\n"
+"	ifn = p4\n"
+"	ibas = 1\n"
+"	asig loscil 1, 1, ifn, ibas\n"
+"	kazim=180\n"
+"	a1,a2,a3,a4,a5,a6,a7,a8 vbap8  asig, kazim, 0, 1        ;change azimuth of soundsource\n"
+"		  outo a1,a2,a3,a4,a5,a6,a7,a8\n"
+"	endin     \n"
+"	instr 3\n"
+"	ifn = p4\n"
+"	ibas = 1\n"
+"	asig loscil 1, 1, ifn, ibas\n"
+"	kazim=270\n"
+"	a1,a2,a3,a4,a5,a6,a7,a8 vbap8  asig, kazim, 0, 1        ;change azimuth of soundsource\n"
+"		  outo a1,a2,a3,a4,a5,a6,a7,a8\n"
+"	endin\n"
+"	</CsInstruments>\n"
+"	<CsScore>\n"
+"	f 1 0 	0   1 \"drum_c_loop_32.wav\" 	0 0 0			;non-deferred sound\n"
+"	f 2 0    0   1 \"mbass_c_loop.wav\"   0 0 0			;& deferred sounds in \n"
+"	f 3 0    0   1 \"macc_c_loop.wav\" 	0 0 0			;different formats					\n"
+"	i 1 0 32 1\n"
+"	i 2 0 32 2	;non-deffered sound for instr. 2 ;im thinkin p4 selects sample \n"
+"	i 3 0 32 3\n"
+"	e\n"
+"	</CsScore>\n"
+"	</CsoundSynthesizer>";
+char *csd_text2;
+char *csd_textf = (char*)malloc(sizeof(char)*(2000));
+
+//END SSBTSOUND "CLASS"
+	int result;
+	printf("createAndCompile entered: %f\n",kazim);
+//	sprintf(csd_textf,"%s22%s",csd_text1,/*kazim,*/csd_text2);
+	sprintf(csd_textf,"%s",csd_text1);
+	csound = csoundCreate(0);
+	printf("createAndCompile CSOUND CREATED\n");
+	result = csoundCompileCsdText(csound,csd_textf);
+	printf("createAndCompile CSOUND COMPILED\n");
+//	result = csoundStart(csound); move to startAndPerform()
+	/*while (1) {
+		result = csoundPerformKsmps(csound);
+		if (result != 0) {
+			break;
+		}
+	}
+	result = csoundCleanup(csound);
+  	csoundReset(csound);*/
+}
+void my_handler(int s){
+           printf("Caught signal %d\n",s);
+           csoundDestroy(csound);
+           t1.join();
+           t2.join();
+           exit(1); 
 }
