@@ -19,6 +19,7 @@ using namespace std;
 void createAndCompile(float);
 void startAndPerform(void);
 void my_handler(int);
+void messAround(void);
 
 CSOUND *csound;
 thread t1;
@@ -162,7 +163,10 @@ int Application::touch_main()
 																								//if(accept_more_touches == false){ //this means they put in a touch and we need to recompile the csound 
 					if(measureNumber>1 && cswaitstate==false){
 						cswaitstate = true;
-						//thread t1(startAndPerform);
+						cout << "start and perform!\n";
+						thread t1(startAndPerform);
+						//thread t2(messAround);
+						t1.join();
 					}
 					
 																								//}
@@ -355,12 +359,26 @@ void Application::appLoop(void)
 	sigIntHandler.sa_flags = 0;
 	sigaction(SIGINT, &sigIntHandler, NULL);
 	createAndCompile(22.5);
-	thread t1(startAndPerform);
+	//thread t1(startAndPerform);
+	//thread t2(*this->touch_main); //are you getting "invalid use of non-static member function ‘int Application::touch_main()’ "
+//	thread t1(startAndPerform);
 	touch_main();
-
 	
 	//return 0;
 }
+
+Application& Application::getApplication()
+{
+	return *this;
+}
+
+void messAround()
+{
+	cout << "going to sleep\n";
+	sleep(5);
+	cout << "that was a good nap\n";
+}
+
 void startAndPerform()
 {
 	int result = 0;
@@ -377,7 +395,7 @@ void startAndPerform()
 	}
 	cout << "startAndPerform() result != 0, join thread.\n";
 	cswaitstate = false;
-	t1.join();
+	//t1.join();	//dont do this...the thread will kill itself prematurely
 }
 
 void createAndCompile(float kazim) //now removing play code 7:49 3-2-19
