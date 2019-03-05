@@ -4,6 +4,7 @@
 #include <allegro5/allegro.h>
 #include "rabbit.h"
 #include "user.h"
+#include "ssbtsound.h"
 
 using namespace std;
 
@@ -12,21 +13,6 @@ using namespace std;
 #define FPS				 30
 #define BPM				145
 
-/* what is an enum:
-enum color { RED, GREEN, BLUE} r = RED;
-switch(r) {
-     case RED   : puts("red"); break;
-     case GREEN : puts("green"); break;
-     case BLUE  : puts("blue"); break;
-}
-
-// some more info:
-enum color { RED, GREEN, BLUE};
-enum color r = RED; // OK
-// color x = GREEN: // Error: color is not in ordinary name space
-typedef enum color color_t;
-color_t x = GREEN; // OK
-*/
 enum gesture { TAP_GESTURE, DISC_GESTURE, WEDGE_GESTURE, INVALID_GESTURE };
 typedef enum gesture gesture_t;
 
@@ -58,6 +44,7 @@ public:
 	ALLEGRO_EVENT_QUEUE *queue;
 	ALLEGRO_EVENT event;
 	ALLEGRO_DISPLAY_MODE disp_data;
+	//Ssbtsound ssbtsound;
 	 
 	int num_touches;
    bool background; 

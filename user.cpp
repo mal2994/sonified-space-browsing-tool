@@ -47,7 +47,7 @@ void User::activateInsideRabbits(Rabbit AllRabbits[])
 	// algorithm coming soon
 	//AllRabbits[0].activate(true);
 
-	
+	// todo if disc not activated, activate all rabbits
 	//disc
 	for(int i=0;i<TOTALRABBITS;i++)
 	{
