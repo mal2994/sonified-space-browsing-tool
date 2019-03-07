@@ -9,21 +9,25 @@
 //#include "touch.h"
 #include "application.h"
 //#include "ssbtsound.h" //redefinition
-#include <csound/csound.h>
-#include <thread>
+#include <csound/csound.hpp>
+#include <csound/csPerfThread.hpp>
 #include <signal.h>		// for sigaction
 #include <unistd.h>		// for sigaction
+#include <cmath>			// for pow()
 
 using namespace std;
 
-void createAndCompile(float);
-void startAndPerform(void);
+void createAndCompile(void);
+void endAndDestroyCsound(void);
 void my_handler(int);
+void messAround(void);
 
-CSOUND *csound;
-thread t1;
-thread t2;
+Csound* csound;
+//thread t1;
+//thread t2;
+CsoundPerformanceThread* perfThread;
 bool cswaitstate = false;
+float chnget2 = 0.0;
 
 void Application::draw_touches(int num, Touch touches[])
 {
@@ -137,7 +141,7 @@ int Application::touch_main()
 						touches[i] = touches[num_touches - 1];
 						num_touches--;
 						accept_more_touches = false; // this is reset by a timer event later in this function 
-						//createAndCompile(22.5);
+						//createAndCompile(22.5);  /*new loudness/panning -- move the rabbits*/
 					}
 					break;
 				}
@@ -160,9 +164,10 @@ int Application::touch_main()
 				{
 					cout << "measure: " << measureNumber++ << "\n";
 																								//if(accept_more_touches == false){ //this means they put in a touch and we need to recompile the csound 
-					if(measureNumber>1 && cswaitstate==false){
+					if(measureNumber%6>4 && cswaitstate==false){
 						cswaitstate = true;
-						//thread t1(startAndPerform);
+						cout << "start and perform -- put code to update csound here!\n"; /*new wavs*/
+
 					}
 					
 																								//}
@@ -201,6 +206,12 @@ int Application::touch_main()
 					cout << "tap.\n";
 					//printf("id = %d, x = %d, y = %d \n",touches[0].id,touches[0].x,touches[0].y);
 					User1.teleport(touches[0].x,touches[0].y);
+					AllRabbits[0].calcDistanceToUser(User1.getTrueX(), User1.getTrueY());
+					cout << AllRabbits[0].getDistanceToUser() << " : distance to user \n";
+					chnget2 = ((float)1 - ((float)AllRabbits[0].getDistanceToUser()/900));
+					cout << "chnget2 = " << chnget2 <<"\n";
+					//csound->SetChannel("chnget2", pow((AllRabbits[0].getDistanceToUser()/800),-1) );
+					csound->SetChannel("chnget2", chnget2);  
 					gesture_processed = true;
 					break;
 				case DISC_GESTURE:
@@ -348,122 +359,57 @@ void Application::appLoop(void)
 
 	User1.activateInsideRabbits(AllRabbits);
 	
-
+	// ctrl c handler
 	struct sigaction sigIntHandler;
 	sigIntHandler.sa_handler = my_handler;
 	sigemptyset(&sigIntHandler.sa_mask);
 	sigIntHandler.sa_flags = 0;
 	sigaction(SIGINT, &sigIntHandler, NULL);
-	createAndCompile(22.5);
-	thread t1(startAndPerform);
+	
+	//csound
+	createAndCompile();
+	
+	//start the program
 	touch_main();
-
 	
 	//return 0;
 }
-void startAndPerform()
-{
-	int result = 0;
-	//while(1) createAndCompile(22.5); putting this in apploop initialize
-	cout << "startAndPerform() csoundPerformKsmps\n";
-	result = csoundStart(csound);
-	result = 0;
-	//while (result == 0)	result = csoundPerformKsmps(csound);
-	while (1) {
-		result = csoundPerformKsmps(csound);
-		if (result != 0) {
-		  break;
-		}
-	}
-	cout << "startAndPerform() result != 0, join thread.\n";
-	cswaitstate = false;
-	t1.join();
+
+Application& Application::getApplication(){
+	return *this;
 }
 
-void createAndCompile(float kazim) //now removing play code 7:49 3-2-19
-{
-// TODO: put this in a class
-// BEGIN SSBTSOUND "CLASS"
-//void createAndCompile(float);
-//void startAndPerform(void);
-char *csd_text1 =
-"	<CsoundSynthesizer>\n"
-"	<CsOptions>\n"
-"	; combined gen01.csd and ../csound-vbaplsinit/test.csd \n"
-"	; Select audio/midi flags here according to platform \n"
-"	-odac     ;;;realtime audio out \n"
-"	;-iadc    ;;;uncomment -iadc if realtime audio input is needed too \n"
-"	; For Non-realtime ouput leave only the line below: \n"
-"	; -o gen01.wav -W ;;; for file output any platform \n"
-"	</CsOptions>\n"
-"	<CsInstruments>\n"
-"	sr = 44100 \n"
-"	ksmps = 16\n"
-"	nchnls = 8 \n"
-"	0dbfs  = 1\n"
-"	vbaplsinit 2, 8, 0, 72, 144, 216, 288, 0, 0, 0\n"
-"	instr 1	;plays deferred and non-deferred sounds with loscil\n"
-"	ifn = p4\n"
-"	ibas = 1\n"
-"	asig loscil 1, 1, ifn, ibas\n"
-"	kazim=90\n"
-"	a1,a2,a3,a4,a5,a6,a7,a8 vbap8  asig, kazim, 0, 1        ;change azimuth of soundsource\n"
-"		  outo a1,a2,a3,a4,a5,a6,a7,a8\n"
-"	endin\n"
-"	instr 2\n"
-"	ifn = p4\n"
-"	ibas = 1\n"
-"	asig loscil 1, 1, ifn, ibas\n"
-"	kazim=180\n"
-"	a1,a2,a3,a4,a5,a6,a7,a8 vbap8  asig, kazim, 0, 1        ;change azimuth of soundsource\n"
-"		  outo a1,a2,a3,a4,a5,a6,a7,a8\n"
-"	endin     \n"
-"	instr 3\n"
-"	ifn = p4\n"
-"	ibas = 1\n"
-"	asig loscil 1, 1, ifn, ibas\n"
-"	kazim=270\n"
-"	a1,a2,a3,a4,a5,a6,a7,a8 vbap8  asig, kazim, 0, 1        ;change azimuth of soundsource\n"
-"		  outo a1,a2,a3,a4,a5,a6,a7,a8\n"
-"	endin\n"
-"	</CsInstruments>\n"
-"	<CsScore>\n"
-"	f 1 0 	0   1 \"drum_c_loop_32.wav\" 	0 0 0			;non-deferred sound\n"
-"	f 2 0    0   1 \"mbass_c_loop.wav\"   0 0 0			;& deferred sounds in \n"
-"	f 3 0    0   1 \"macc_c_loop.wav\" 	0 0 0			;different formats					\n"
-"	i 1 0 32 1\n"
-"	i 2 0 32 2	;non-deffered sound for instr. 2 ;im thinkin p4 selects sample \n"
-"	i 3 0 32 3\n"
-"	e\n"
-"	</CsScore>\n"
-"	</CsoundSynthesizer>";
-char *csd_text2;
-char *csd_textf = (char*)malloc(sizeof(char)*(2000));
+void messAround(){
+	cout << "going to sleep\n";
+	sleep(5);
+	cout << "that was a good nap\n";
+}
 
-//END SSBTSOUND "CLASS"
-	int result;
-	printf("createAndCompile entered: %f\n",kazim);
-//	sprintf(csd_textf,"%s22%s",csd_text1,/*kazim,*/csd_text2);
-	sprintf(csd_textf,"%s",csd_text1);
-	csound = csoundCreate(0);
-	printf("createAndCompile CSOUND CREATED\n");
-	result = csoundCompileCsdText(csound,csd_textf);
-	printf("createAndCompile CSOUND COMPILED\n");
-//	result = csoundStart(csound); move to startAndPerform()
-	/*while (1) {
-		result = csoundPerformKsmps(csound);
-		if (result != 0) {
-			break;
-		}
-	}
-	result = csoundCleanup(csound);
-  	csoundReset(csound);*/
+void endAndDestroyCsound(){
+	perfThread->Stop();
+	// free thread object
+	delete perfThread;
+	// free Csound object
+	delete csound;
+}
+
+void createAndCompile(){
+	// create an instance of Csound
+	csound = new Csound();
+	// compile instance of csound
+	csound->Compile("genrrm2.csd");
+	// setup performance thread
+	CsoundPerformanceThread* perfThread = new CsoundPerformanceThread(csound);
+	// start Csound performance
+	perfThread->Play(); 
+	// should do this for error checking, perhaps in a posix thread:
+	///while(perfThread->GetStatus() == 0 && shouldPlay)
+	//messAround();
+	//csound->SetChannel("chnget2", chnget2);  
 }
 void my_handler(int s){
-           printf("Caught signal %d\n",s);
-           csoundDestroy(csound);
-           t1.join();
-           t2.join();
-           exit(1); 
+	printf("Caught signal %d\n",s);
+	endAndDestroyCsound();
+	exit(0);
 }
 

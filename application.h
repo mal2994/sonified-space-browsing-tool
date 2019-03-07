@@ -64,7 +64,7 @@ public:
 	gesture_t id_gesture();
 
 private:
-
+	Application& getApplication();
 	gesture_t currentGesture;
 
 };
