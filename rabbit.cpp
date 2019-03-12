@@ -10,8 +10,10 @@ Rabbit::Rabbit()
    truex = -100;
    truey = -100;
    distance_to_user = 9999;
+   distance_complement = 0.0;
+   angle_to_user = 0.0;
    activated = false;
-	is_fox = false;
+	 is_fox = false;
 }
 
 Rabbit::~Rabbit(){}
@@ -37,38 +39,44 @@ void Rabbit::initRabbit(int x, int y){
 	cout << "distance to user: " << AllRabbits[0].getDistanceToUser() << "\n";
 }*/
 
-void Rabbit::calcDistanceToUser(int userx, int usery)
-{
-	distance_to_user = sqrt(pow(userx - truex, 2) + pow(usery - truey, 2)); //this is an integer, not a double. we are rounding.
+void Rabbit::calcDistanceToUser(int userx, int usery){
+	distance_to_user    = sqrt(pow(userx - truex, 2) + pow(usery - truey, 2));             //this is an integer, not a double. we are rounding.
+  distance_complement = ((float)1 - (distance_to_user/900));     // complement distance to amplitude
 }
 
-void Rabbit::activate(bool flag)
-{
+void Rabbit::calcAngleToUser(int userx, int usery){
+  angle_to_user = acos((abs(truex - userx)/distance_to_user))*(180.0/3.141592653589793238463);
+}
+
+float Rabbit::getAngleToUser(){
+  return angle_to_user;
+}
+
+void Rabbit::activate(bool flag){
 	activated = flag;
 }
 
 // CONSTANT MEMBER FUNCTIONS
-int Rabbit::getTrueX()
-{
+int Rabbit::getTrueX(){
 	return truex;
 }
 
-int Rabbit::getTrueY()
-{
+int Rabbit::getTrueY(){
 	return truey;
 }
 
-int Rabbit::getDistanceToUser() //be sure to call calcDistanceToUser() as appropriate
-{
+float Rabbit::getDistanceToUser(){ //be sure to call calcDistanceToUser() as appropriate{
 	return distance_to_user;
 }
 
-bool Rabbit::isActivated()
-{
+float Rabbit::getDistanceComplement(){ //be sure to call calcDistanceToUser() as appropriate{
+	return distance_complement;
+}
+
+bool Rabbit::isActivated(){
 	return activated;
 }
 
-Rabbit& Rabbit::getRabbit()
-{
+Rabbit& Rabbit::getRabbit(){
 	return *this;//Rabbit;
 }

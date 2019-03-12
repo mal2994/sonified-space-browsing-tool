@@ -7,8 +7,8 @@ using namespace std;
 /* CONSTRUCTOR */
 User::User()
 {
-   truex = 0;
-   truey = 0;
+   truex = 400;
+   truey = 200;
 }
 // DESTRUCTOR
 User::~User(){}
@@ -29,6 +29,7 @@ void User::teleport(int x, int y){
 	setTrueY(y);
 	cout << "User teleported." << "\n";
 	cout << "coords: " << getTrueX() << ", " << getTrueY() << "\n";
+
 }
 
 /* CONSTANT MEMBER FUNCTIONS */
@@ -61,7 +62,7 @@ void User::activateInsideRabbits(Rabbit AllRabbits[])
 			AllRabbits[i].activate(false);
 		}
 	}
-	
+
 }
 
 Disc& User::getDisc1()
@@ -181,5 +182,3 @@ bool Wedge::isActivated()
 {
 	return activated;
 }
-
-
