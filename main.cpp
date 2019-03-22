@@ -1,21 +1,47 @@
+// todo hrtf
 #include "application.h"
 #include <allegro5/allegro.h>
-#include <thread>
 #include <iostream>
+#include <stdio.h> // for sscanf()
 
 using namespace std;
 
-int main()
-{
-	int error = 0;
-	
-   Application *application = new Application();
-   error = application->init();
+int main(int argc, char** argv) {
+	int error = 0, param = 0;
+	bool valid = true;
+	Application *application = new Application();
+
+	if(argc == 2){													// if one parameter given from command line like so: ./ssbt 11100111
+		valid = sscanf(argv[1],"%d",&param);
+		if(valid) valid = application->convertArgv1(param);		// char array to int, reuse valid variable
+		else cout << "invalid\n";
+		if(valid) application->setMode();			// set io mode with command line args
+		else if (valid == false){
+			application->askMode();							// ask for io mode if no command line args
+			application->setMode();							// then set io mode
+		}
+		cout << "---------------------------------------------------------------\n";
+		cout << "enter commands by first pressing and releasing the up arrow.\n";
+		cout << "then type in one of the following commands\n";
+		cout << "one letter for action, and three digits for coordinates\n";
+		cout << "disc and wedge require two points, teleport only one point\n";
+		cout << "teleport: txxxyyy\n";
+		cout << "disc: dxxxyyyxxxyyy\n"
+		cout << "wedge wxxxyyyxxxyyy\n";
+		cout << "START PROGRAM? (y/n) ";
+		cin >> param; //any variable that wont be used again, its just a wait
+		if(param == 'n'){
+			cout << "---------------------------------------------------------------\n";
+			exit(0);
+		}
+	}else if (argc == 1){										// no additional parameters like so: ./ssbt
+		application->modesDefault();
+	}
+
+	error = application->initAllegro5();		// using mode_flags from either askMode() or modesDefault()
 	if(!error)
-		application->appLoop();
-	
+		application->touch_main();						// start the program
+
 	cout << "finished" << "\n";
-	
-	
-   return 0;
+	return 0;
 }
