@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include "rabbit.h"
+#include "application.h"
 #define SCREENDIAGONAL(x,y) sqrt(x*x + y*y)
 #define NEARSIGHTEDNESS 0.2                 // sound is emitted how far across the screen? number is proportion of screen
 
@@ -53,13 +54,16 @@ void Rabbit::calcDistanceToUser(int userx, int usery){
 }
 
 void Rabbit::calcAngleToUser(int userx, int usery){
-  angle_to_user = DEGTORAD(acos(abs(truex - userx)/distance_to_user));
-  if(truex < usery) angle_to_user = angle_to_user*-1+360;
+  angle_to_user = /*DEGTORAD*/(acos(truex - userx)/distance_to_user) * 180 / 3.141592653589793238463;
+  cout << "    debug: " << (truex - userx)/distance_to_user << "\n";
+  cout << "    debug acos: " << acos(truex - userx)/distance_to_user * 180 / 3.141592653589793238463 << "\n";
+  //if(truey < usery) angle_to_user = (angle_to_user*-1)+360;
 //  cout << "Rabbit["<<rabbit_id<<"] angle to user: " << angle_to_user << "\n";
 }
 
-void Rabbit::activate(bool flag) activated = flag;
-
+void Rabbit::activate(bool flag){
+   activated = flag;
+}
 // CONSTANT MEMBER FUNCTIONS
 int Rabbit::getTrueX(){
 	return truex;

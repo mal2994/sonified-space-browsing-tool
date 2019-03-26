@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
 		cout << "one letter for action, and three digits for coordinates\n";
 		cout << "disc and wedge require two points, teleport only one point\n";
 		cout << "teleport: txxxyyy\n";
-		cout << "disc: dxxxyyyxxxyyy\n"
+		cout << "disc: dxxxyyyxxxyyy\n";
 		cout << "wedge wxxxyyyxxxyyy\n";
 		cout << "START PROGRAM? (y/n) ";
 		cin >> param; //any variable that wont be used again, its just a wait

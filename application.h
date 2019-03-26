@@ -30,7 +30,7 @@ using namespace std;
 #define GEST_ANGLE_STY	40 // degrees 					// sensitivity for gestures
 #define GEST_RADII_STY	100 // pixels 					// sensitivity for gestures
 
-// mode flag indices in mode_flags array 
+// mode flag indices in mode_flags array
 #define R2R_FLAG			0
 #define STEREO_FLAG		1
 #define SUR51_FLAG		2
