@@ -39,6 +39,7 @@ int User::getTrueY(){
 }
 
 void User::activateInsideRabbits(Rabbit AllRabbits[]){
+  cout << "user x: " <<truex<< " user y: "<<truey<<"\n";
   // User has no disc or wedge
   if(!Disc1.isActivated() && !Wedge1.isActivated()){
     for (int i = 0; i<NUMRABBITS; i++){
@@ -71,6 +72,8 @@ void User::activateInsideRabbits(Rabbit AllRabbits[]){
       }
       cout << "[activateInsideRabbits] AllRabbits["<<i<<"] rabbit_id " << AllRabbits[i].getRabbitId() << " truex " << AllRabbits[i].getTrueX() << " truey " << AllRabbits[i].getTrueY() << " distance_to_user " << AllRabbits[i].getDistanceToUser() << " angle_to_user " << AllRabbits[i].getAngleToUser() << "\n";
     }
+  }else{
+    cout << "[activateInsideRabbits] you dont have a disc wedge or no disc wedge all that stuff.\n";
   }
 }
 

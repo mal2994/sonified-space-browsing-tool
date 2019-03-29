@@ -1,0 +1,3 @@
+yeah on this computer csound only works with headphones
+the audio has been screwed up since i installed ubuntu
+you can try pacmd to configure it but it doesnt work for me
