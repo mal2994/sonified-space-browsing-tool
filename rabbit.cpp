@@ -1,8 +1,8 @@
 #include <iostream>
 #include <cmath>
 #include "rabbit.h"
-#define SCREENDIAGONAL(x,y) sqrt(x*x + y*y)
-#define NEARSIGHTEDNESS 0.2                 // sound is emitted how far across the screen? number is proportion of screen
+#include "application.h"
+//#define SCREENDIAGONAL(x,y) sqrt(x*x + y*y) moved to application.h
 
 using namespace std;
 
@@ -47,19 +47,26 @@ void Rabbit::initRabbit(int a, bool b, bool c, int x, int y, int userx, int user
 }
 
 void Rabbit::calcDistanceToUser(int userx, int usery){
-	distance_to_user = abs(sqrt(pow(userx - truex, 2) + pow(usery - truey, 2)));             //this is an integer, not a double. we are rounding.
-  distance_complement = ((float)1 - (distance_to_user/(NEARSIGHTEDNESS * SCREENDIAGONAL(SCREENW,SCREENH))));   // complement distance to amplitude
-//  cout << "Rabbit["<<rabbit_id<<"] distance to user: " << distance_to_user << ", complement is " << distance_complement << "\n";
+	distance_to_user = abs(sqrt(pow(userx - truex, 2) + pow(usery - truey, 2)));                   // this is an integer, not a double. we are rounding.
+  distance_complement = (((float)1) - (distance_to_user/(SCREENDIAGONAL(SCREENW,SCREENH)/2)));   // complement distance to amplitude
+//  cout << "distance_to_user: " << distance_to_user << "distance_complement: " << distance_complement << "\n";
 }
 
 void Rabbit::calcAngleToUser(int userx, int usery){
-  angle_to_user = DEGTORAD(acos(abs(truex - userx)/distance_to_user));
-  if(truex < usery) angle_to_user = angle_to_user*-1+360;
-//  cout << "Rabbit["<<rabbit_id<<"] angle to user: " << angle_to_user << "\n";
+//  angle_to_user = DEGTORAD(acos((truex - userx)/distance_to_user)); // get our adjacent and hypotenuse
+//  if(usery > truey) angle_to_user = (angle_to_user*-1)+360;         // reflection & offset to get an increasing value after cos 1/2
+angle_to_user = DEGTORAD(acos((userx - truex)/distance_to_user)); // get our adjacent and hypotenuse
+if(usery < truey) angle_to_user = (angle_to_user*-1)+360;         // reflection & offset to get an increasing value after cos 1/2
+  angle_to_user -= 90;                                              // 0 deg is to the left, we will make it to the up
+  if(angle_to_user < 0) angle_to_user += 360;                       // ^ will give us some negatives, which are decreasing at a convenient rate...
+  if(distance_to_user == 0) angle_to_user = 0;                      // todo activate all speakers or earcon or something
+
+//  cout << "angle_to_user: " << angle_to_user << "\n";
 }
 
-void Rabbit::activate(bool flag) activated = flag;
-
+void Rabbit::activate(bool flag){
+   activated = flag;
+}
 // CONSTANT MEMBER FUNCTIONS
 int Rabbit::getTrueX(){
 	return truex;

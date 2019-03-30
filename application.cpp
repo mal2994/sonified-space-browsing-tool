@@ -37,7 +37,7 @@ Application::Application(){
   sigemptyset(&sigIntHandler.sa_mask);
   sigIntHandler.sa_flags = 0;
   sigaction(SIGINT, &sigIntHandler, NULL);
-  initAllRabbits();
+  //initAllRabbits(); 																								// nice bug lol
 }
 // APPLICATION DESTRUCTOR
 Application::~Application(){
@@ -70,22 +70,22 @@ int Application::initAllegro5(){
 	}
 
 	if(mode_flags[TOUCH_FLAG]){
-		display = al_create_display(800, 480);                           // make window in OS
+		display = al_create_display(SCREENW,SCREENH);//(800, 480);                           // make window in OS
 		if (!display){
 			cout << "Could not create display. \n";
 			return -1;
 		}
-		al_hide_mouse_cursor(display);																	 // hides cursor in the window
 		al_get_display_mode(al_get_num_display_modes() - 1, &disp_data); // fullscreen
 		al_set_new_display_flags(ALLEGRO_FULLSCREEN);                    // fullscreen
 		al_register_event_source(queue, al_get_display_event_source(display));	// associate display with event queue
-
-		if (!al_install_touch_input()) {
+		al_hide_mouse_cursor(display);																	 // hides cursor in the window
+		if (!al_install_touch_input()){
 		  cout << "Could not enable touch input. \n";
 		  al_destroy_display(display);
 		  return -1;
 		}
 		al_register_event_source(queue, al_get_touch_input_event_source());	// associate touch with event queue
+		al_init_primitives_addon();                           // primitivies are basic graphics
 
 	}else{
 		// touch screen is off, use keyboard for user input
@@ -93,13 +93,13 @@ int Application::initAllegro5(){
 			cout <<"failed to initialize the keyboard!\n";
 			return -1;
 		}*/
+		//al_register_event_source(queue, al_get_keyboard_event_source());
 	}
 
-	al_init_primitives_addon();                           // primitivies are basic graphics
-	timer = al_create_timer(1.0 / FPS);										// how often data changed by sensors is sent to csound
+	timer = al_create_timer(1.0 / FPS);										// how often data changed by sensors/file is sent to csound
   if (!timer){
     cout << "Could not create seconds timer. \n";
-    al_destroy_timer(timer);//todo move to destructor or something
+    al_destroy_timer(timer);														// its also in destructor..
     al_destroy_display(display);
     return -1;
   }
@@ -130,7 +130,6 @@ int Application::initAllegro5(){
 
 	al_register_event_source(queue, al_get_timer_event_source(timer));
 	al_register_event_source(queue, al_get_timer_event_source(metronome));
-	//al_register_event_source(queue, al_get_keyboard_event_source());
 
   return 0;
 }
@@ -170,7 +169,7 @@ gesture_t Application::id_gesture(){
 			// if one finger is at the center of the screen (+/-100), it can be a valid disc or wedge
 			if((fingers[i].x < CENTERX+100 && fingers[i].x > CENTERX-100) && (fingers[i].y < CENTERY+100 && fingers[i].y > CENTERY-100)){
 				no_center = false;    // you have at least one finger on the center of the screen
-				cout << "you have at least one finger on the center of the screen \n";
+//				cout << "you have at least one finger on the center of the screen \n";
 
 				// get radii with absolute value of distance formula
 				radius1 = abs(sqrt(pow(fingers[i].x - fingers[i+1%3].x, 2) + pow(fingers[i].y - fingers[i+1%3].y, 2))); //this is an integer, not a double. we are rounding.
@@ -187,7 +186,7 @@ gesture_t Application::id_gesture(){
 		}
 		// we have looked through all of the fingers and found none of them were at the center:
 		if(no_center){
-			cout << "you have no fingers at the center of the screen.\n";
+//			cout << "you have no fingers at the center of the screen.\n";
 			return INVALID_GESTURE;
 
 		}else{	// one of the fingers was at the center
@@ -203,11 +202,13 @@ gesture_t Application::id_gesture(){
 int Application::touch_main(){
   while (!quit){
 
-		// only draw when all other events are complete
-		if (!background && al_is_event_queue_empty(queue)) { 	  // background is true when android/ios user switches apps.
-      al_clear_to_color(al_map_rgb(255, 255, 255));
-      draw_touches(num_touches, touches);
-      al_flip_display();
+    if(mode_flags[TOUCH_FLAG]){ //if graphics/touch enabled.
+		  // only draw when all other events are complete
+		  if (!background && al_is_event_queue_empty(queue)) { 	  // background is true when android/ios user switches apps.
+        al_clear_to_color(al_map_rgb(255, 255, 255));
+        draw_touches(num_touches, touches);
+        al_flip_display();
+		  }
 		}
 
 		// sit here until an event of any kind comes in
@@ -226,40 +227,42 @@ int Application::touch_main(){
 					}
           break;
 				} todo took keyboard out for testing.*/
-				case ALLEGRO_EVENT_TOUCH_BEGIN: {              // motion gestures TODO
-					int i = num_touches;
-					if (num_touches < MAX_TOUCHES) {
-						touches[i].id = event.touch.id;            // these three lines log touches chronologically
-						touches[i].x = event.touch.x;
-						touches[i].y = event.touch.y;
-						fingers[event.touch.id].x = event.touch.x; // these two lines log touches by finger
-						fingers[event.touch.id].y = event.touch.y;
-						num_touches++;
-					}
-					break;
-				}
-  			case ALLEGRO_EVENT_TOUCH_END: {
-  				int i = which_finger(event.touch.id, num_touches, touches);
-  				if (i >= 0 && i < num_touches) {
-  					touches[i] = touches[num_touches - 1];
-  					num_touches--;
-  					accept_more_touches = false; 							// this is reset by a timer event later in this function
-						gesture_identified = false;
-						ssbtsound.csound->SetChannel("drumackamp",1.0);				// turn the drum acknowledge on
-  				}
-  					break;
-  			}
-  			case ALLEGRO_EVENT_TOUCH_MOVE: {
-  				int i = which_finger(event.touch.id, num_touches, touches);
-  				if (i >= 0) {
-  					touches[i].x = event.touch.x;
-  					touches[i].y = event.touch.y;
-  					fingers[event.touch.id].x = event.touch.x;
-  					fingers[event.touch.id].y = event.touch.y;
-  				}
-  				break;
-				}
-			} // end touch events (if accept_more_touches)
+		    if(mode_flags[TOUCH_FLAG]){ //if graphics/touch enabled.
+				  case ALLEGRO_EVENT_TOUCH_BEGIN: {              // motion gestures TODO
+					  int i = num_touches;
+					  if (num_touches < MAX_TOUCHES) {
+						  touches[i].id = event.touch.id;            // these three lines log touches chronologically
+						  touches[i].x = event.touch.x;
+						  touches[i].y = event.touch.y;
+						  fingers[event.touch.id].x = event.touch.x; // these two lines log touches by finger
+						  fingers[event.touch.id].y = event.touch.y;
+						  num_touches++;
+					  }
+					  break;
+				  }
+    			case ALLEGRO_EVENT_TOUCH_END: {
+    				int i = which_finger(event.touch.id, num_touches, touches);
+    				if (i >= 0 && i < num_touches) {
+    					touches[i] = touches[num_touches - 1];
+    					num_touches--;
+    					accept_more_touches = false; 							// this is reset by a timer event later in this function
+						  gesture_identified = false;
+						  ssbtsound.csound->SetChannel("drumackamp",1.0);				// turn the drum acknowledge on
+    				}
+    					break;
+    			}
+    			case ALLEGRO_EVENT_TOUCH_MOVE: {
+    				int i = which_finger(event.touch.id, num_touches, touches);
+    				if (i >= 0) {
+    					touches[i].x = event.touch.x;
+    					touches[i].y = event.touch.y;
+    					fingers[event.touch.id].x = event.touch.x;
+    					fingers[event.touch.id].y = event.touch.y;
+    				}
+    				break;
+				  }
+			  } // end touch events (if accept_more_touches)
+			} //end touch enabled events
 			// TIMER EVENTS //
 			case ALLEGRO_EVENT_TIMER: {
 				if (event.timer.source == metronome){       // poll for which timer it is with if statements
@@ -267,21 +270,21 @@ int Application::touch_main(){
 					// TODO if gesture_identified NEW WAVS
 					switch(currentGesture){
 						case TAP_GESTURE:{
-							cout << "GESTURE = tap.\n";
+//							cout << "GESTURE = tap.\n";
 							User1.teleport(touches[0].x,touches[0].y);
 							calculateChannels();
 							break;
 						}
 						case DISC_GESTURE:{
-							cout << "GESTURE = disc.\n";
+//							cout << "GESTURE = disc.\n";
 							break;
 						}
 						case WEDGE_GESTURE:{
-							cout << "GESTURE = wedge.\n";
+//							cout << "GESTURE = wedge.\n";
 							break;
 						}
 						case INVALID_GESTURE:{
-							cout << "GESTURE = invalid.\n";
+//							cout << "GESTURE = invalid.\n";
 							gesture_identified = true;						// lock out id_gesture() to control flow
 							break;
 						}
@@ -293,7 +296,7 @@ int Application::touch_main(){
 					ssbtsound.setDrumAckAmp(0.0);					// turn off drum acknowledge
 
 				}else if(event.timer.source == timer){			// poll for which timer it is with if statements
-					ssbtsound.flipChannels();
+					//ssbtsound.flipChannels(); //this looks to me like a horrible place to put this
 				}
 			} // end timer events
 
@@ -339,15 +342,14 @@ void Application::printTouches(){ // for debugging
 }
 
 void Application::initAllRabbits(void){
-	cout << "User coords: " << User1.getTrueX() << ", " << User1.getTrueY() << "\n";
+//	cout << "User coords: " << User1.getTrueX() << ", " << User1.getTrueY() << "\n";
 	int rx[NUMRABBITS] = {400, 400, 400};		/* TODO these are bugs if programmer makes NUMRABBITS > 3 */
 	int ry[NUMRABBITS] = {200, 200, 200};
 
 	for(int i = 0; i < NUMRABBITS; i++){
-		// a=rabbit_id, b=is_fox, c=is_rabbit, x=truex, y=truey, userx, usery
+		// a=rabbit_id, b=is_fox, c=is_rabbit, x=truex, y=truey, userx, usery // put this here to help you write the next line
 		AllRabbits[i].initRabbit(i,false,true,rx[i],ry[i],User1.getTrueX(),User1.getTrueY());
 	}
-
 	User1.activateInsideRabbits(AllRabbits);		// without a disc or wedge we are effectively activating them all
 }
 
@@ -363,12 +365,16 @@ void Application::ctrlcHandler(int s){
 	exit(0);
 }
 
+// hi debuggers, where are you putting this btw? todo todo todo I think it belongs here or in touch_main. probably touch_main
+//	//User1.activateInsideRabbits(AllRabbits);
 void Application::calculateChannels(){
 	for(int i = 0; i < NUMRABBITS; i++){
 		// modift all rabbit objects' attributes
 		AllRabbits[i].calcDistanceToUser(User1.getTrueX(), User1.getTrueY());                   // does distance and distance complement
 		AllRabbits[i].calcAngleToUser(User1.getTrueX(), User1.getTrueY());
-		User1.activateInsideRabbits(AllRabbits);
+	}
+
+	for(int i = 0; i < NUMRABBITS; i++){
 		// modify ssbtsound object attributes with data from rabbit objects' attributes
 		ssbtsound.setDistanceChn(i,AllRabbits[i].getDistanceComplement());
 		ssbtsound.setAngleChn(i,AllRabbits[i].getAngleToUser());
@@ -380,9 +386,9 @@ bool Application::convertArgv1(int num){
 	unsigned char bitPos = 0x80;				// 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80
 	unsigned char answer = 0x00;
 	bool valid = true;
-	for(int i = 7; i > 0; i--){
+	for(int i = 7; i >= 0; i--){
 		if (num/divisor == 1){
-			mode_flags[i] = true;
+			mode_flags[i*-1+7] = true;			// use reflection & offset to make downcounter an upcounter i*-1+7
 			answer += bitPos;
 			num -= divisor;
 		}else if (num/divisor != 0){
@@ -392,39 +398,39 @@ bool Application::convertArgv1(int num){
 		bitPos /= 2;
 		divisor /= 10;
 	}
-	cout << "---------------------------------------------------------------\n";
-	cout << "------------------------ I/0 CONFIG ---------------------------\n";
-	cout << "---------------------------------------------------------------\n";
 	return valid;
 }
 
-void Application::setMode(){
+void Application::echoMode(){
 	//cout << "SETTING OPTIONS... --------------------------------------------\n";
-	cout << "---------------------------------------------------------------\n";
-	if(mode_flags[R2R_FLAG] == true)cout << "RABBIT TO RABBIT ENABLED.\n";
-	if(mode_flags[STEREO_FLAG] == true)cout << "STEREO SOUND ENABLED.\n";
-	else if(mode_flags[SUR51_FLAG] == true)cout << "5.1 SOUND ENABLED.\n";
-	else if(mode_flags[SUR71_FLAG] == true)cout << "7.1 SOUND ENABLED.\n";
-	else{																														// no sound setting selected
-		 cout << "STEREO SOUND ENABLED.\n";
+//	cout << "---------------------------------------------------------------\n";
+	cout << "MODES SELECTED: ";
+	if(mode_flags[R2R_FLAG] == true)cout << "Rabbit to rabbit enabled. User to rabbit disabled. ";
+	if(mode_flags[STEREO_FLAG] == true)cout << "Stereo sound enabled. ";
+	else if(mode_flags[SUR51_FLAG] == true)cout << "5.1 sound enabled. ";
+	else if(mode_flags[SUR71_FLAG] == true)cout << "7.1 sound enabled. ";
+	else{																																						// no sound setting selected
+		 cout << "Stereo sound enabled. ";
 		 mode_flags[STEREO_FLAG] = true;
-	 }
-	if(mode_flags[TOUCH_FLAG] == true)cout << "TOUCH ENABLED.\n";
-	if(mode_flags[HRTF_FLAG] == true && mode_flags[STEREO_FLAG] == true)cout << "HRTF ENABLED\n";
-//	if(mode_flags[6] == true)cout << "FLAG 6 IS DUMMY.\n";
-//	if(mode_flags[7] == true)cout << "FLAG 7 IS DUMMY.\n";
+	}
+	if(mode_flags[TOUCH_FLAG] == true)cout << "Touch enabled. ";
+	if(mode_flags[HRTF_FLAG] == true && mode_flags[STEREO_FLAG] == true)cout << "HRTF enabled ";
+//	if(mode_flags[0] == true)cout << "FLAG 0 IS DUMMY.\n";
+//	if(mode_flags[1] == true)cout << "FLAG 1 IS DUMMY.\n";
+cout << "\n";
 }
 
 void Application::askMode(){
 	char response = 'n';
-	cout << "I/O SETTINGS MENU ---------------------------------------------\n";
 	cout << "---------------------------------------------------------------\n";
+	cout << "--------------------- I/O SETTINGS MENU -----------------------\n";
+	cout << "------------------------------&--------------------------------\n";
 	cout << "Correct usage: ./ssbt 11111111\n";
 	cout << "STEREO SOUND? (y/n) ";
 	cin >> response;
 	if(response == 'y'){
 		mode_flags[STEREO_FLAG] = true;												// 2.0 stereo mode
-		cout << "HRTF? (recommended yes) (y/n) ";																// if stereo, hrtf available
+		cout << "HRTF? (recommended yes) (y/n) ";							// if stereo, hrtf available
 		cin >> response;
 		if(response == 'y'){
 			mode_flags[HRTF_FLAG] = true;												// stereo hrtf mode
@@ -442,12 +448,17 @@ void Application::askMode(){
 	}
 	cout << "RABBIT TO RABBIT SOUND? (y/n) ";
 	cin >> response;
-	if(response == 'y') mode_flags[R2R_FLAG] = true;						// rabbit to rabbit enabled, user to rabbit disabled
+	if(response == 'y') mode_flags[R2R_FLAG] = true;					// rabbit to rabbit enabled, user to rabbit disabled
 	cout << "TOUCH SCREEN? (y/n) ";
 	cin >> response;
 	if (response == 'y'){
 		mode_flags[TOUCH_FLAG] = true;												// touch enabled
 	}
+	cout << "---------------------------------------------------------------\n";
+	cout << "------------------------- I/0 CONFIG --------------------------\n";
+	cout << "------------------------------&--------------------------------\n";
+	cout << "TIP: Use this command to start up in this mode:\n";
+	cout << "./ssbt " << mode_flags[0] << mode_flags[1] << mode_flags[2] << mode_flags[3] << mode_flags[4] << mode_flags[5] << mode_flags[6] << mode_flags[7] << "\n";
 }
 
 void Application::modesDefault(void){

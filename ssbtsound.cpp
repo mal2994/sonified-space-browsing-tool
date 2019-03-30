@@ -4,6 +4,7 @@
 #include <stdio.h>									// for sprintf()
 #include <stdlib.h>
 #include "ssbtsound.h"
+#include "application.h"
 
 using namespace std;
 
@@ -23,18 +24,18 @@ Ssbtsound::~Ssbtsound(){
 };
 
 void Ssbtsound::compileCsound(bool* mode_flags){
-	/*if(mode_flags[1]){
-		if(mode_flags[5]){
+	if(mode_flags[STEREO_FLAG]){
+		if(mode_flags[HRTF_FLAG]){
 			csound->Compile("ssbt2hrtf.csd");
 		}else{
 			csound->Compile("ssbt2.csd");
 		}
-	}else if (mode_flags[2]){
+	}else if (mode_flags[SUR51_FLAG]){
 			csound->Compile("ssbt51.csd");
-	}else if (mode_flags[3]){
+	}else if (mode_flags[SUR71_FLAG]){
 			csound->Compile("ssbt71.csd");
-	}*/
-	csound->Compile("ssbt51.csd");
+	}
+	//csound->Compile("ssbt51.csd");
 }
 
 // MODIFICATION MEMBER FUNCTIONS //
