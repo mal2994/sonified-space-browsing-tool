@@ -8,6 +8,7 @@ using namespace std;
 
 int main(int argc, char** argv) {
 	int error = 0, param = 0;
+	char yn = 'n';
 	bool valid = true;
 	Application *application = new Application();
 
@@ -15,22 +16,22 @@ int main(int argc, char** argv) {
 		valid = sscanf(argv[1],"%d",&param);
 		if(valid) valid = application->convertArgv1(param);		// char array to int, reuse valid variable
 		else cout << "invalid\n";
-		if(valid) application->setMode();			// set io mode with command line args
+		if(valid) application->echoMode();			// set io mode with command line args
 		else if (valid == false){
 			application->askMode();							// ask for io mode if no command line args
-			application->setMode();							// then set io mode
+			application->echoMode();						// then echo it back to users
 		}
 		cout << "---------------------------------------------------------------\n";
-		cout << "enter commands by first pressing and releasing the up arrow.\n";
-		cout << "then type in one of the following commands\n";
-		cout << "one letter for action, and three digits for coordinates\n";
-		cout << "disc and wedge require two points, teleport only one point\n";
+		cout << "Enter commands by first pressing the up arrow then type one of\n";
+		cout << "the following commands:\n";
+//		cout << "one letter for action, and three digits for coordinates\n";
+//		cout << "disc and wedge require two points, teleport only one point\n";
 		cout << "teleport: txxxyyy\n";
-		cout << "disc: dxxxyyyxxxyyy\n"
+		cout << "disc: dxxxyyyxxxyyy\n";
 		cout << "wedge wxxxyyyxxxyyy\n";
 		cout << "START PROGRAM? (y/n) ";
-		cin >> param; //any variable that wont be used again, its just a wait
-		if(param == 'n'){
+		cin >> yn; //any variable that wont be used again, its just a wait
+		if(yn == 'n'){
 			cout << "---------------------------------------------------------------\n";
 			exit(0);
 		}
