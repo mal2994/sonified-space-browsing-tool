@@ -53,14 +53,13 @@ void Rabbit::calcDistanceToUser(int userx, int usery){
 }
 
 void Rabbit::calcAngleToUser(int userx, int usery){
-//  angle_to_user = DEGTORAD(acos((truex - userx)/distance_to_user)); // get our adjacent and hypotenuse
-//  if(usery > truey) angle_to_user = (angle_to_user*-1)+360;         // reflection & offset to get an increasing value after cos 1/2
-angle_to_user = DEGTORAD(acos((userx - truex)/distance_to_user)); // get our adjacent and hypotenuse
-if(usery < truey) angle_to_user = (angle_to_user*-1)+360;         // reflection & offset to get an increasing value after cos 1/2
-  angle_to_user -= 90;                                              // 0 deg is to the left, we will make it to the up
-  if(angle_to_user < 0) angle_to_user += 360;                       // ^ will give us some negatives, which are decreasing at a convenient rate...
-  if(distance_to_user == 0) angle_to_user = 0;                      // todo activate all speakers or earcon or something
-
+  //  angle_to_user = DEGTORAD(acos((truex - userx)/distance_to_user)); // get our adjacent and hypotenuse
+  //  if(usery > truey) angle_to_user = (angle_to_user*-1)+360;         // reflection & offset to get an increasing value after cos 1/2
+  angle_to_user = DEGTORAD(acos((userx - truex)/distance_to_user));     // get our adjacent and hypotenuse
+  if(usery < truey) angle_to_user = (angle_to_user*-1)+360;             // reflection & offset to get an increasing value after cos 1/2
+  angle_to_user -= 90;                                                  // 0 deg is to the left, we will make it to the up
+  if(angle_to_user < 0) angle_to_user += 360;                           // ^ will give us some negatives, which are decreasing at a convenient rate...
+  if(distance_to_user == 0) angle_to_user = 0;                          // todo activate all speakers or earcon or something
 //  cout << "angle_to_user: " << angle_to_user << "\n";
 }
 
@@ -94,6 +93,10 @@ float Rabbit::getDistanceComplement(){ //be sure to call calcDistanceToUser() as
 
 bool Rabbit::isActivated(){
 	return activated;
+}
+
+bool Rabbit::isFox(){
+  return is_fox;
 }
 
 Rabbit& Rabbit::getRabbit(){
