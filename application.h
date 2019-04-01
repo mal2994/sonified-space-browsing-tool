@@ -8,7 +8,7 @@
 #include "rabbit.h"
 #include "user.h"
 
-#ifndef SSBTSOUND_H					// idk why it seems i can redefine rabbit.h to my hearts content!
+#ifndef SSBTSOUND_H					// idk why it seems i can redefine rabbit.h to my hearts content! by the way, pragma once takes care of this
 #include "ssbtsound.h"
 #endif
 
@@ -25,8 +25,10 @@ using namespace std;
 #define SCREENH					400
 #define CENTERX					SCREENW/2
 #define CENTERY					SCREENH/2
-#define GEST_ANGLE_STY	40 // degrees 					// sensitivity for gestures
-#define GEST_RADII_STY	100 // pixels 					// sensitivity for gestures
+#define EAR_DIST				100
+#define GEST_ANGLE_STY	20 // degrees 					// sensitivity for gestures
+#define GEST_RADII_STY	20 // pixels 						// sensitivity for gestures, note that we will have to match the touch screen here. fingers too close start to become one.
+#define CENTR_STY				50											// this is a plus or minus value so it ends up being 100
 #define NEARSIGHTEDNESS 0.2                 		// sound is emitted how far across the screen? number is proportion of screen
 #define SCREENDIAGONAL(x,y) sqrt(x*x + y*y)
 #define DEGTORAD(x)					(x * 180 / ALLEGRO_PI)
@@ -40,7 +42,7 @@ using namespace std;
 #define TOUCH_FLAG		6
 #define HRTF_FLAG			7
 
-enum gesture { TAP_GESTURE, DISC_GESTURE, WEDGE_GESTURE, INVALID_GESTURE };
+enum gesture { TAP_GESTURE, DISC_GESTURE, WEDGE_GESTURE, INVALID_GESTURE, NO_GESTURE };
 typedef enum gesture gesture_t;
 
 class Touch
@@ -71,6 +73,7 @@ public:
 	ALLEGRO_DISPLAY_MODE disp_data;
 	Ssbtsound ssbtsound;
 	int num_touches;
+	int num_fingers;
   bool background;
 	bool quit;
 	bool accept_more_touches;
@@ -92,6 +95,7 @@ public:
 	void modesDefault(void);
 
 	gesture_t id_gesture(void);
+	void draw_gesture(void);
 
 	bool mode_flags[8]= {false, false, false, false, false, false, false, false};	// we can do that here, its an array
 	bool convertArgv1(int);
@@ -102,7 +106,9 @@ private:
 	Application& getApplication(void);
 	gesture_t currentGesture;
 	struct sigaction sigIntHandler;
-
+	int r2rdistances[NUMRABBITS-1] = {};
+	int song;
+	bool fpsready;
 };
 
 #endif

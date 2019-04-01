@@ -13,8 +13,11 @@ Ssbtsound::Ssbtsound(){
 	for(int i = 0; i < NUMRABBITS; i++) distance_chns[i] = 0.0;
 	for(int i = 0; i < NUMRABBITS; i++) angle_chns[i] = 0.0;
 	drumackamp = 0.0;
+	swishamp = 0.0;
 	csound = new Csound();														// create an instance of Csound
 	perfThread = new CsoundPerformanceThread(csound); // setup performance thread
+	song = 0;
+	firstcall = true;
 }
 
 Ssbtsound::~Ssbtsound(){
@@ -56,9 +59,14 @@ void Ssbtsound::setDrumAckAmp(float a){
 	csound->SetChannel("drumackamp", drumackamp);		// this channel isn't locked to metronome, especially "turn ons"
 }
 
+void Ssbtsound::setSwishAmp(float a){
+	swishamp = a;
+}
+
 void Ssbtsound::flipChannels(){	//similar to allegro_flip_display...set em at different times then flip em all at once
 	char bufferD[10];		// todo would 11 be ok so we can do more than 9 rabbits?
 	char bufferA[7];		// todo would 8 be ok so we can do more than 9 rabbits?
+											// ^ to pass a channel name as string to csound
 
 	for(int i = 0; i < NUMRABBITS; i++){
 		sprintf(bufferD, "r%ddistance", i);
@@ -66,8 +74,22 @@ void Ssbtsound::flipChannels(){	//similar to allegro_flip_display...set em at di
 //		cout << "Rabbit " << i << " distance channel = " << distance_chns[i] << "\n";
 
 		sprintf(bufferA, "r%dangle", i);
-		csound->SetChannel(bufferA, angle_chns[i]);				// example: chnset 180, "r0angle"
+		csound->SetChannel(bufferA, angle_chns[i]);			// example: chnset 180, "r0angle"
 //		cout << "Rabbit " << i << " angle channel = " << angle_chns[i] << "\n";
+	}
+
+	// "you've got the fox" earcon
+	cout << "swish amp = " << swishamp << "\n";
+	csound->SetChannel("swishamp",swishamp);
+
+	// change song
+	if(firstcall){
+		firstcall = false;
+	}else
+	{
+		song = (song+1)%NUMSONGS;
+		cout << "cpp song: " << (float)song << "\n";
+		csound->SetChannel("song",(float)song);
 	}
 //	cout << "ssbtsound flipped the channels.\n";
 }

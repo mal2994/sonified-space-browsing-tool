@@ -29,7 +29,7 @@ Application::Application(){
 	accept_more_touches = true;
 	gesture_identified = false;
 	measureNumber = 0;
-	currentGesture = INVALID_GESTURE; //have to initialize it to something or other
+	currentGesture = NO_GESTURE;
 	//mode_flags = {false, false, false, false, false, false, false, false};
   //Ssbtsound ssbtsound;
   //struct sigaction sigIntHandler;
@@ -70,13 +70,15 @@ int Application::initAllegro5(){
 	}
 
 	if(mode_flags[TOUCH_FLAG]){
-		display = al_create_display(SCREENW,SCREENH);//(800, 480);                           // make window in OS
+		al_init_primitives_addon();                           // primitivies are basic graphics
+		//al_get_display_mode(al_get_num_display_modes() - 1, &disp_data); 		// fullscreen
+		//al_set_new_display_flags(ALLEGRO_FULLSCREEN);                    		// fullscreen
+		//display = al_create_display(disp_data.width, disp_data.height);                          // make window in OS
+		display = al_create_display(SCREENW, SCREENH);                          // make window in OS
 		if (!display){
 			cout << "Could not create display. \n";
 			return -1;
 		}
-		al_get_display_mode(al_get_num_display_modes() - 1, &disp_data); // fullscreen
-		al_set_new_display_flags(ALLEGRO_FULLSCREEN);                    // fullscreen
 		al_register_event_source(queue, al_get_display_event_source(display));	// associate display with event queue
 		al_hide_mouse_cursor(display);																	 // hides cursor in the window
 		if (!al_install_touch_input()){
@@ -85,7 +87,7 @@ int Application::initAllegro5(){
 		  return -1;
 		}
 		al_register_event_source(queue, al_get_touch_input_event_source());	// associate touch with event queue
-		al_init_primitives_addon();                           // primitivies are basic graphics
+
 
 	}else{
 		// touch screen is off, use keyboard for user input
@@ -134,7 +136,7 @@ int Application::initAllegro5(){
   return 0;
 }
 
-void Application::draw_touches(int num, Touch touches[]){
+void Application::draw_touches(int num, Touch touches[]){	//todo these are part of the class. can we get rid of this?
    for (int i = 0; i < num; i++) {
       int x = touches[i].x;
       int y = touches[i].y;
@@ -151,19 +153,21 @@ int Application::which_finger(int id, int num, Touch touches[]){
    return -1;
 }
 
-gesture_t Application::id_gesture(){
+void Application::draw_gesture(){
 	int radius1 = -1, radius2 = -1;						// all calculations are local to this function
 	float angle1 = 0, angle2 = 0;
-  bool no_center = true;
+ 	bool no_center = true;
 
-	// if one finger (0based-numbering), its a tap.
-	if(num_touches == 0) return TAP_GESTURE;
+ 	// draw the center of the screen
+ 	al_draw_rectangle(CENTERX+CENTR_STY, CENTERY+CENTR_STY, CENTERX-CENTR_STY, CENTERY-CENTR_STY, al_map_rgb(64, 64, 64), 5);
 
+	// always draw fingers
+	draw_touches(num_touches, touches);
 	// if two fingers...invalid for now. this would be pinch or pull.
-	if(num_touches == 1) return INVALID_GESTURE;
+	//if(num_touches == 2) return;
 
 	// if three fingers it is either a disc or wedge
-	if(num_touches == 2) {
+	if(num_touches == 3) {
 		for(int i = 0; i < 3; i++)	{ //check all fingers
 
 			// if one finger is at the center of the screen (+/-100), it can be a valid disc or wedge
@@ -187,16 +191,76 @@ gesture_t Application::id_gesture(){
 		// we have looked through all of the fingers and found none of them were at the center:
 		if(no_center){
 //			cout << "you have no fingers at the center of the screen.\n";
+			return;
+
+		}else{	// one of the fingers was at the center
+			if(abs(angle1-angle2)<GEST_ANGLE_STY && abs(radius1-radius2)>GEST_RADII_STY){
+				al_draw_circle(CENTERX, CENTERY, radius1, al_map_rgb(255, 255, 0), 5);		//al_flip_display() will take care of these
+				al_draw_circle(CENTERX, CENTERY, radius2, al_map_rgb(255, 255, 0), 5);
+			}
+			if(abs(angle1-angle2)>=GEST_ANGLE_STY && abs(radius1-radius2)<GEST_RADII_STY){
+				//draw wedge
+				cout << "angle1 = " << angle1 << " angle2 = " << angle2 << "\n";
+			}
+		}
+	}
+	if(num_touches > 3) return; // too many touches
+
+	return;
+}
+
+gesture_t Application::id_gesture(){
+	int radius1 = -1, radius2 = -1;						// all calculations are local to this function
+	float angle1 = 0, angle2 = 0;
+ 	bool no_center = true;
+
+	// draw a tap.
+	if(num_touches == 1) return TAP_GESTURE;
+
+	// if two fingers...invalid for now. this would be pinch or pull.
+	if(num_touches == 2) return INVALID_GESTURE;
+
+	// if three fingers it is either a disc or wedge
+	if(num_touches == 3) {
+		for(int i = 0; i < 3; i++)	{ //check all fingers
+
+			// if one finger is at the center of the screen (+/-100), it can be a valid disc or wedge
+			if((fingers[i].x < CENTERX+CENTR_STY && fingers[i].x > CENTERX-CENTR_STY) && (fingers[i].y < CENTERY+CENTR_STY && fingers[i].y > CENTERY-CENTR_STY)){
+				no_center = false;    // you have at least one finger on the center of the screen
+//				cout << "you have at least one finger on the center of the screen \n";
+
+				// get radii with absolute value of distance formula
+				radius1 = abs(sqrt(pow(fingers[i].x - fingers[i+1%3].x, 2) + pow(fingers[i].y - fingers[i+1%3].y, 2))); //this is an integer, not a double. we are rounding.
+				radius2 = abs(sqrt(pow(fingers[i].x - fingers[i+2%3].x, 2) + pow(fingers[i].y - fingers[1+2%3].y, 2))); //this is an integer, not a double. we are rounding.
+
+				// get angles with some trig unit circle type stuff, also convert from radians to degress.
+				angle1 = DEGTORAD(acos((fingers[i+1%3].x-CENTERX)/(sqrt(pow(fingers[i+1%3].x-CENTERX, 2) + pow(fingers[i+1%3].y-CENTERY, 2)))));
+				angle2 = DEGTORAD(acos((fingers[i+2%3].x-CENTERX)/(sqrt(pow(fingers[i+2%3].x-CENTERX, 2) + pow(fingers[i+2%3].y-CENTERY, 2)))));
+
+				// acos returns 0-180 for an entire circle. use reflection and offset to get us the 180-360 range in quadrants III and IV
+				if(fingers[i+1%3].y < CENTERY) angle1 = (angle1*-1)+360;
+				if(fingers[i+2%3].y < CENTERY) angle2 = (angle2*-1)+360;
+			}
+		}
+		// we have looked through all of the fingers and found none of them were at the center:
+		if(no_center){
+//			cout << "you have no fingers at the center of the screen.\n";
 			return INVALID_GESTURE;
 
 		}else{	// one of the fingers was at the center
-			if(abs(angle1-angle2)<GEST_ANGLE_STY && abs(radius1-radius2)>GEST_RADII_STY)
+			if(abs(angle1-angle2)<GEST_ANGLE_STY && abs(radius1-radius2)>GEST_RADII_STY){
+				User1.getDisc1().setRadii(radius1,radius2);
 				return DISC_GESTURE;	// similar angles, dissimilar radii is disc
-			if(abs(angle1-angle2)>=GEST_ANGLE_STY && abs(radius1-radius2)<GEST_RADII_STY)
+			}
+			if(abs(angle1-angle2)>=GEST_ANGLE_STY && abs(radius1-radius2)<GEST_RADII_STY){
+				User1.getWedge1().setAngles(angle1,angle2);
 				return WEDGE_GESTURE;	// dissimilar angles, similar radii is wedge
+			}
 		}
 	}
-	return INVALID_GESTURE; // too many touches
+	if(num_touches > 3) return INVALID_GESTURE; // too many touches
+
+	return NO_GESTURE;
 }
 
 int Application::touch_main(){
@@ -204,12 +268,12 @@ int Application::touch_main(){
 
     if(mode_flags[TOUCH_FLAG]){ //if graphics/touch enabled.
 		  // only draw when all other events are complete
-		  if (!background && al_is_event_queue_empty(queue)) { 	  // background is true when android/ios user switches apps.
-        al_clear_to_color(al_map_rgb(255, 255, 255));
-        draw_touches(num_touches, touches);
-        al_flip_display();
-		  }
+		if (!background && al_is_event_queue_empty(queue)) { 	  // background is true when android/ios user switches apps.
+	        al_clear_to_color(al_map_rgb(255, 255, 255));
+	        draw_gesture();
+	        al_flip_display();
 		}
+	}
 
 		// sit here until an event of any kind comes in
 		al_wait_for_event(queue, &event);
@@ -241,14 +305,15 @@ int Application::touch_main(){
 					  break;
 				  }
     			case ALLEGRO_EVENT_TOUCH_END: {
-    				int i = which_finger(event.touch.id, num_touches, touches);
-    				if (i >= 0 && i < num_touches) {
-    					touches[i] = touches[num_touches - 1];
-    					num_touches--;
+    				//int i = which_finger(event.touch.id, num_touches, touches);
+    				//if (i >= 0 && i < num_touches) {
+    				//	touches[i] = touches[num_touches - 1];
+    				//	num_touches--;
     					accept_more_touches = false; 							// this is reset by a timer event later in this function
-						  gesture_identified = false;
-						  ssbtsound.csound->SetChannel("drumackamp",1.0);				// turn the drum acknowledge on
-    				}
+						gesture_identified = false;
+						ssbtsound.csound->SetChannel("drumackamp",1.0);				// turn the drum acknowledge on
+
+    				//}
     					break;
     			}
     			case ALLEGRO_EVENT_TOUCH_MOVE: {
@@ -266,37 +331,54 @@ int Application::touch_main(){
 			// TIMER EVENTS //
 			case ALLEGRO_EVENT_TIMER: {
 				if (event.timer.source == metronome){       // poll for which timer it is with if statements
-					cout << "measure: " << measureNumber++ << "\n";
-					// TODO if gesture_identified NEW WAVS
-					switch(currentGesture){
-						case TAP_GESTURE:{
-//							cout << "GESTURE = tap.\n";
-							User1.teleport(touches[0].x,touches[0].y);
-							calculateChannels();
-							break;
-						}
-						case DISC_GESTURE:{
-//							cout << "GESTURE = disc.\n";
-							break;
-						}
-						case WEDGE_GESTURE:{
-//							cout << "GESTURE = wedge.\n";
-							break;
-						}
-						case INVALID_GESTURE:{
-//							cout << "GESTURE = invalid.\n";
-							gesture_identified = true;						// lock out id_gesture() to control flow
-							break;
-						}
-					} //end switch currentGesture
-					accept_more_touches = true;
-					gesture_identified = true;						// lock out id_gesture() to control flow
-					currentGesture = INVALID_GESTURE;			// lock out switch currentGesture
-					ssbtsound.flipChannels();
-					ssbtsound.setDrumAckAmp(0.0);					// turn off drum acknowledge
-
+					if(!accept_more_touches && gesture_identified){
+						cout << "measure: " << measureNumber++ << "\n";
+						cout << "preempt g = " << currentGesture << "\n";
+						switch(currentGesture){
+							case TAP_GESTURE:{
+								cout << "GESTURE = tap.\n";
+								User1.teleport(touches[0].x,touches[0].y);
+								User1.getDisc1().activate(false);
+								User1.getWedge1().activate(false);
+								calculateChannels();
+								break;
+							}
+							case DISC_GESTURE:{
+								cout << "GESTURE = disc.\n";
+								User1.getDisc1().activate(true);
+								User1.activateInsideRabbits(AllRabbits);
+								calculateChannels();
+								break;
+							}
+							case WEDGE_GESTURE:{
+								cout << "GESTURE = wedge.\n";
+								// todo if no disc, can have no wedge. is that what we want to do?
+								User1.getWedge1().activate(true);
+								User1.activateInsideRabbits(AllRabbits);
+								calculateChannels();
+								break;
+							}
+							case INVALID_GESTURE:{
+								cout << "GESTURE = invalid.\n";
+								User1.getDisc1().activate(false);
+								User1.getWedge1().activate(false);
+								calculateChannels();
+								break;
+							}
+							case NO_GESTURE:{								// no gesture was made within a progression time frame
+								break;
+							}
+						} //end switch currentGesture
+						ssbtsound.flipChannels();
+						accept_more_touches = true;
+						gesture_identified = false;						// lock out id_gesture() to control flow
+						currentGesture = NO_GESTURE;					// lock out switch currentGesture
+						ssbtsound.setDrumAckAmp(0.0);					// turn off drum acknowledge
+						ssbtsound.setSwishAmp(0.0);
+						num_touches = 0;								// an event will set this to 0, but we want to clear the display a little early.
+					} //end if !accept_more_touches
 				}else if(event.timer.source == timer){			// poll for which timer it is with if statements
-					//ssbtsound.flipChannels(); //this looks to me like a horrible place to put this
+					
 				}
 			} // end timer events
 
@@ -327,8 +409,10 @@ int Application::touch_main(){
 		// when they lift up their fingers, that's the gesture we're locking in
 		// and we're not accepting more touches until audio display flip
 		if(!accept_more_touches && !gesture_identified){		// touch screen is blocked from taking more gestures &&
-																												// lock us out from indentifying the same gesture many times
 			currentGesture = id_gesture();
+			cout << "id_gesture = " << currentGesture << "\n";
+			gesture_identified = true;						// lock us out from indentifying the same gesture many times
+
 		} //end if accept_more_touches and !gesture_identified
 	} //end while !quit
    return 0;
@@ -343,8 +427,8 @@ void Application::printTouches(){ // for debugging
 
 void Application::initAllRabbits(void){
 //	cout << "User coords: " << User1.getTrueX() << ", " << User1.getTrueY() << "\n";
-	int rx[NUMRABBITS] = {400, 400, 400};		/* TODO these are bugs if programmer makes NUMRABBITS > 3 */
-	int ry[NUMRABBITS] = {200, 200, 200};
+	int rx[NUMRABBITS] = {0, 400, 800, 800};
+	int ry[NUMRABBITS] = {0, 200, 400, 0};
 
 	for(int i = 0; i < NUMRABBITS; i++){
 		// a=rabbit_id, b=is_fox, c=is_rabbit, x=truex, y=truey, userx, usery // put this here to help you write the next line
@@ -368,16 +452,37 @@ void Application::ctrlcHandler(int s){
 // hi debuggers, where are you putting this btw? todo todo todo I think it belongs here or in touch_main. probably touch_main
 //	//User1.activateInsideRabbits(AllRabbits);
 void Application::calculateChannels(){
+
+	// modify all rabbit objects' attributes
 	for(int i = 0; i < NUMRABBITS; i++){
-		// modift all rabbit objects' attributes
 		AllRabbits[i].calcDistanceToUser(User1.getTrueX(), User1.getTrueY());                   // does distance and distance complement
 		AllRabbits[i].calcAngleToUser(User1.getTrueX(), User1.getTrueY());
 	}
 
+	// modify ssbtsound object attributes with data from rabbit objects' attributes
 	for(int i = 0; i < NUMRABBITS; i++){
-		// modify ssbtsound object attributes with data from rabbit objects' attributes
-		ssbtsound.setDistanceChn(i,AllRabbits[i].getDistanceComplement());
-		ssbtsound.setAngleChn(i,AllRabbits[i].getAngleToUser());
+		if(AllRabbits[i].isActivated()){														// if Rabbit is activated, send its data to csound
+			ssbtsound.setDistanceChn(i,AllRabbits[i].getDistanceComplement());
+			ssbtsound.setAngleChn(i,AllRabbits[i].getAngleToUser());
+		}else{																					// if Rabbit is not activated, turn its volume off
+			ssbtsound.setDistanceChn(i,0.0);
+		}
+	}
+
+	// modify application class attribute r2rdistances
+	for(int i = 1; i < NUMRABBITS; i++){
+		r2rdistances[i-1] = abs(sqrt(pow(AllRabbits[i].getTrueX() - AllRabbits[i-1].getTrueX(), 2) + pow(AllRabbits[i].getTrueY() - AllRabbits[i-1].getTrueY(), 2)));// this is an integer, not a double. we are rounding.
+		cout << "r2rdistances[i-1] = " << r2rdistances[i-1] << "\n";
+	}
+
+	// are you very close to a fox?
+	ssbtsound.setSwishAmp(0.0);
+	for(int i = 0; i < NUMRABBITS; i++){
+		if(!AllRabbits[i].isFox()){
+			if (AllRabbits[i].getDistanceToUser() < EAR_DIST){
+				ssbtsound.setSwishAmp(1.0);
+			}
+		}
 	}
 }
 

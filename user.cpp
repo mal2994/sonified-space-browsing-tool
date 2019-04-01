@@ -39,18 +39,16 @@ int User::getTrueY(){
 }
 
 void User::activateInsideRabbits(Rabbit AllRabbits[]){
-  cout << "user x: " <<truex<< " user y: "<<truey<<"\n";
-
   // User has no disc or wedge
   if(!Disc1.isActivated() && !Wedge1.isActivated()){
     for (int i = 0; i<NUMRABBITS; i++){
       AllRabbits[i].activate(true);
-      cout << "[activateInsideRabbits] AllRabbits["<<i<<"] rabbit_id " << AllRabbits[i].getRabbitId() << " truex " << AllRabbits[i].getTrueX() << " truey " << AllRabbits[i].getTrueY() << " distance_to_user " << AllRabbits[i].getDistanceToUser() << " angle_to_user " << AllRabbits[i].getAngleToUser() << "\n";
+//      cout << "[activateInsideRabbits] AllRabbits["<<i<<"] rabbit_id " << AllRabbits[i].getRabbitId() << " truex " << AllRabbits[i].getTrueX() << " truey " << AllRabbits[i].getTrueY() << " distance_to_user " << AllRabbits[i].getDistanceToUser() << " angle_to_user " << AllRabbits[i].getAngleToUser() << "\n";
     }
   }
 
   // User has a disc, check for wedge later
-  else if(Disc1.isActivated()){
+  if(Disc1.isActivated()){
   	for(int i=0;i<NUMRABBITS;i++){
   		if(AllRabbits[i].getDistanceToUser() > getDisc1().getRadius1()
   		&& AllRabbits[i].getDistanceToUser() < getDisc1().getRadius2()){
@@ -58,12 +56,12 @@ void User::activateInsideRabbits(Rabbit AllRabbits[]){
   		}else{
   			AllRabbits[i].activate(false);
   		}
-      cout << "[activateInsideRabbits] AllRabbits["<<i<<"] rabbit_id " << AllRabbits[i].getRabbitId() << " truex " << AllRabbits[i].getTrueX() << " truey " << AllRabbits[i].getTrueY() << " distance_to_user " << AllRabbits[i].getDistanceToUser() << " angle_to_user " << AllRabbits[i].getAngleToUser() << "\n";
+//      cout << "[activateInsideRabbits] AllRabbits["<<i<<"] rabbit_id " << AllRabbits[i].getRabbitId() << " truex " << AllRabbits[i].getTrueX() << " truey " << AllRabbits[i].getTrueY() << " distance_to_user " << AllRabbits[i].getDistanceToUser() << " angle_to_user " << AllRabbits[i].getAngleToUser() << "\n";
   	}
   }
 
   // User has a wedge
-  else if(Wedge1.isActivated()){
+  if(Wedge1.isActivated()){
     for(int i=0;i<NUMRABBITS;i++){
       if(AllRabbits[i].getAngleToUser() > getWedge1().getAngle1()
       && AllRabbits[i].getAngleToUser() < getWedge1().getAngle2()){
@@ -71,10 +69,10 @@ void User::activateInsideRabbits(Rabbit AllRabbits[]){
       }else{
         AllRabbits[i].activate(false);
       }
-      cout << "[activateInsideRabbits] AllRabbits["<<i<<"] rabbit_id " << AllRabbits[i].getRabbitId() << " truex " << AllRabbits[i].getTrueX() << " truey " << AllRabbits[i].getTrueY() << " distance_to_user " << AllRabbits[i].getDistanceToUser() << " angle_to_user " << AllRabbits[i].getAngleToUser() << "\n";
+//      cout << "[activateInsideRabbits] AllRabbits["<<i<<"] rabbit_id " << AllRabbits[i].getRabbitId() << " truex " << AllRabbits[i].getTrueX() << " truey " << AllRabbits[i].getTrueY() << " distance_to_user " << AllRabbits[i].getDistanceToUser() << " angle_to_user " << AllRabbits[i].getAngleToUser() << "\n";
     }
   }else{
-    cout << "[activateInsideRabbits] you dont have a disc wedge or no disc wedge all that stuff.\n";
+//    cout << "[activateInsideRabbits] you dont have a disc wedge or no disc wedge all that stuff.\n";
   }
 }
 

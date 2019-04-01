@@ -1,8 +1,8 @@
 #ifndef RABBIT_H
 #define RABBIT_H
 
-#define TOTALRABBITS  3       // array size
-#define NUMRABBITS    3       // total used
+#define TOTALRABBITS  4       // array size   // todo doesnt seem to be used...reasonably so
+#define NUMRABBITS    4       // total used
 
 class Rabbit {
 public:
@@ -27,6 +27,7 @@ public:
    float getDistanceComplement();
    float getAngleToUser();
    bool isActivated();
+   bool isFox();
    Rabbit& getRabbit();
 
 private:

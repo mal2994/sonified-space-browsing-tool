@@ -12,11 +12,11 @@ int main(int argc, char** argv) {
 	bool valid = true;
 	Application *application = new Application();
 
-	if(argc == 2){													// if one parameter given from command line like so: ./ssbt 11100111
+	if(argc == 2){												// if one parameter given from command line like so: ./ssbt 11100111
 		valid = sscanf(argv[1],"%d",&param);
 		if(valid) valid = application->convertArgv1(param);		// char array to int, reuse valid variable
 		else cout << "invalid\n";
-		if(valid) application->echoMode();			// set io mode with command line args
+		if(valid) application->echoMode();						// set io mode with command line args
 		else if (valid == false){
 			application->askMode();							// ask for io mode if no command line args
 			application->echoMode();						// then echo it back to users
