@@ -24,22 +24,10 @@ Ubuntu Xerial Xerus tests failed, due to dependency Allegro 5.2 not supported by
 
 ALLEGRO:
 https://liballeg.org/download.html
-sudo apt install liballegro5.2
+sudo apt install liballegro5
+sudo apt install liballegro5-dev
 
 CSOUND:
 https://csound.com/download.html
 sudo apt install csound
 sudo apt install libcsnd-dev
-
-
-NEEDS WORK:
-wedge/disc isolation: Problem is unknown (update mar 24: the isolation code is never called.)
-
-teleport: Problems with calculating azimuth have been corrected, but possibly could be better compartmentalized. Problems with vbaplsinit have been corrected (dummy channels). Distance attenuation needs tweaked to a model comfortable to user. Testing must be done to determine more problems!
-
-user iomodes: Keyboard events imitating touch screen events need fixed. Read-from-file/Read-from-sensor modes have not begun. Autodetect screen size would be nice. Testing must be done to determine more problems!
-
-makefile: either do the makefile or get the shell script uploaded
-
-ADDITIONS SINCE PATCH 15
-Multiple rabbits supported in csound. SSBTSOUND_H has been refactored in its entireity. Main loop restructured with drum acknowledge. #define for different size screens.
