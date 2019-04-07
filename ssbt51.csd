@@ -106,7 +106,7 @@ playit:
 					outo asig, asig, asig, asig, asig, asig, asig, asig
 endin
 
-instr 8                                                ; drum acknowledge instrument
+instr 8                                                ; you got the fox instrument
 kamp chnget "swishamp"                                 ; amplitude control
 kpitch = 1                                              ; pitch control
 kloopstart = 0                                          ; loop start point (although krate, updates only once per loop)
@@ -138,7 +138,8 @@ floop1:
   kgoto playit
 
 playit:
-					outo asig, asig, asig, asig, asig, asig, asig, asig
+          a1,a2,a3,a4,a5,a6,a7,a8 vbap8  asig, kazim, 0, 1        ;change azimuth of soundsource
+					outo a1,a2,a3,a4,a5,a6,a7,a8
 endin
 
 instr 5																									; rabbit1 instrument
@@ -185,7 +186,8 @@ floop1:
   kgoto playit
 
 playit:
-				  outo asig, asig, asig, asig, asig, asig, asig, asig
+          a1,a2,a3,a4,a5,a6,a7,a8 vbap8  asig, kazim, 0, 1        ;change azimuth of soundsource
+					outo a1,a2,a3,a4,a5,a6,a7,a8
 endin
 
 instr 7																									; rabbit3 instrument
@@ -208,7 +210,8 @@ floop1:
   kgoto playit
 
 playit:
-					outo asig, asig, asig, asig, asig, asig, asig, asig
+          a1,a2,a3,a4,a5,a6,a7,a8 vbap8  asig, kazim, 0, 1        ;change azimuth of soundsource
+					outo a1,a2,a3,a4,a5,a6,a7,a8
 endin
 
 
