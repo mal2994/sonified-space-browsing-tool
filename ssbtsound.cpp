@@ -63,7 +63,7 @@ void Ssbtsound::setSwishAmp(float a){
 	swishamp = a;
 }
 
-void Ssbtsound::flipChannels(){	//similar to allegro_flip_display...set em at different times then flip em all at once
+void Ssbtsound::flipChannels(bool newsong){	// similar to allegro_flip_display...set em at different times then flip em all at once
 	char bufferD[10];		// todo would 11 be ok so we can do more than 9 rabbits?
 	char bufferA[7];		// todo would 8 be ok so we can do more than 9 rabbits?
 											// ^ to pass a channel name as string to csound
@@ -79,19 +79,21 @@ void Ssbtsound::flipChannels(){	//similar to allegro_flip_display...set em at di
 	}
 
 	// "you've got the fox" earcon
-	cout << "swish amp = " << swishamp << "\n";
+//	cout << "swish amp = " << swishamp << "\n";
 	csound->SetChannel("swishamp",swishamp);
 
-	// change song
-	if(firstcall){
-		firstcall = false;
-	}else
-	{
-		song = (song+1)%NUMSONGS;
-		cout << "cpp song: " << (float)song << "\n";
-		csound->SetChannel("song",(float)song);
+	if(newsong){
+		// change song
+		if(firstcall){
+			firstcall = false;
+		}else
+		{
+			song = (song+1)%NUMSONGS;
+//			cout << "cpp song: " << (float)song << "\n";
+			csound->SetChannel("song",(float)song);
+		}
 	}
-//	cout << "ssbtsound flipped the channels.\n";
+	//	cout << "ssbtsound flipped the channels.\n";
 }
 // CONSTANT MEMBER FUNCTIONS //
 int Ssbtsound::startPerformanceThread(){

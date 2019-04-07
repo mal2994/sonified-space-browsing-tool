@@ -25,8 +25,8 @@ void User::setTrueY(int a){
 void User::teleport(int x, int y){
 	setTrueX(x);
 	setTrueY(y);
-	cout << "User teleported." << "\n";
-	cout << "coords: " << getTrueX() << ", " << getTrueY() << "\n";
+//	cout << "User teleported." << "\n";
+	cout << "User coords: " << getTrueX() << ", " << getTrueY() << "\n";
 }
 
 /* CONSTANT MEMBER FUNCTIONS */

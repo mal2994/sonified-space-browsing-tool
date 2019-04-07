@@ -14,6 +14,7 @@
 #include <csound/csPerfThread.hpp>
 #include <signal.h>		// for sigaction
 #include <unistd.h>		// for sigaction
+#include <thread>	// for threads 
 using namespace std;
 
 // APPLICATION CONSTRUCTOR
@@ -45,6 +46,7 @@ Application::~Application(){
    al_destroy_timer(timer);
 	 al_destroy_timer(metronome);
    al_destroy_display(display);
+	 gpiot.join();
 }
 
 Application& Application::getApplication(){
@@ -56,7 +58,7 @@ int Application::initAllegro5(){
 	 cout << "Could not create Allegro instance. \n";
 	 return -1;
 	}
-
+	
 	// in the queue go the signals from the different threads, touch input, display window, timer
 	// use a single event queue to prevent having to poll both the queue AND the event!
 	queue = al_create_event_queue();
@@ -122,18 +124,41 @@ int Application::initAllegro5(){
 	User1.teleport(CENTERX,CENTERY); 											// this line just sets User1.truex and truey which are already set...
 	initAllRabbits();
 	calculateChannels();																	// calculate distances and angles
-	ssbtsound.flipChannels();															// send the channels
+	ssbtsound.flipChannels(false);												// send the channels
 																						// ^should be no issue with portability, as allegro 5 timer is mandatory
 
-
-
   // associate the queue and the event sources (no error checking and register them even if we dont have them? todo)
-
-
 	al_register_event_source(queue, al_get_timer_event_source(timer));
 	al_register_event_source(queue, al_get_timer_event_source(metronome));
-
+	
+	// GPIO set up
+//	pthread_create(&gpiot, NULL, *this->ssbtgpiot);// create thread for reading GPIO
+	gpiot = this->makeThread();
   return 0;
+}
+
+thread Application::makeThread(){
+	return thread([=]{ssbtgpiof();});
+}
+
+void Application::ssbtgpiof(){
+	int val = 0;
+	if(ssbtgpio.setUpPins() == 1){
+		return;
+	}
+	while(1){
+		AllRabbits[0].setTrueY(((float)(ssbtgpio.readChn(0) / 15)) * SCREENH);
+		cout << "Rabbit0 = 0, " << AllRabbits[0].getTrueY() << "\n";
+		AllRabbits[1].setTrueY(((float)(ssbtgpio.readChn(1) / 15)) * SCREENH);
+		cout << "Rabbit1 = 266, " << AllRabbits[1].getTrueY() << "\n";
+		AllRabbits[2].setTrueY(((float)(ssbtgpio.readChn(2) / 15)) * SCREENH);
+		cout << "Rabbit2 = 566, " << AllRabbits[2].getTrueY() << "\n";
+		AllRabbits[3].setTrueY(((float)(ssbtgpio.readChn(3) / 15)) * SCREENH);
+		cout << "Rabbit3 = 800, " << AllRabbits[3].getTrueY() << "\n";
+		calculateChannels(); 																	// user coordinate updates are locked to metronome, this is fine.
+		ssbtsound.flipChannels(false);												// flip channels but don't change song
+	}
+	return;
 }
 
 void Application::draw_touches(int num, Touch touches[]){	//todo these are part of the class. can we get rid of this?
@@ -158,11 +183,15 @@ void Application::draw_gesture(){
 	float angle1 = 0, angle2 = 0;
  	bool no_center = true;
 
+	// draw some lines to split up the screen 
+	al_draw_line(133, 0, 133, 400, al_map_rgb(64, 64, 64), 3);
+	al_draw_line(399, 0, 399, 400, al_map_rgb(64, 64, 64), 3);
+	al_draw_line(665, 0, 665, 400, al_map_rgb(64, 64, 64), 3);
+	
  	// draw the center of the screen
  	al_draw_rectangle(CENTERX+CENTR_STY, CENTERY+CENTR_STY, CENTERX-CENTR_STY, CENTERY-CENTR_STY, al_map_rgb(64, 64, 64), 5);
+	draw_touches(num_touches, touches);				// always draw fingers
 
-	// always draw fingers
-	draw_touches(num_touches, touches);
 	// if two fingers...invalid for now. this would be pinch or pull.
 	//if(num_touches == 2) return;
 
@@ -192,7 +221,6 @@ void Application::draw_gesture(){
 		if(no_center){
 //			cout << "you have no fingers at the center of the screen.\n";
 			return;
-
 		}else{	// one of the fingers was at the center
 			if(abs(angle1-angle2)<GEST_ANGLE_STY && abs(radius1-radius2)>GEST_RADII_STY){
 				al_draw_circle(CENTERX, CENTERY, radius1, al_map_rgb(255, 255, 0), 5);		//al_flip_display() will take care of these
@@ -200,12 +228,11 @@ void Application::draw_gesture(){
 			}
 			if(abs(angle1-angle2)>=GEST_ANGLE_STY && abs(radius1-radius2)<GEST_RADII_STY){
 				//draw wedge
-				cout << "angle1 = " << angle1 << " angle2 = " << angle2 << "\n";
+//				cout << "angle1 = " << angle1 << " angle2 = " << angle2 << "\n";
 			}
 		}
 	}
 	if(num_touches > 3) return; // too many touches
-
 	return;
 }
 
@@ -332,11 +359,11 @@ int Application::touch_main(){
 			case ALLEGRO_EVENT_TIMER: {
 				if (event.timer.source == metronome){       // poll for which timer it is with if statements
 					if(!accept_more_touches && gesture_identified){
-						cout << "measure: " << measureNumber++ << "\n";
-						cout << "preempt g = " << currentGesture << "\n";
+//						cout << "measure: " << measureNumber++ << "\n";
+//						cout << "preempt g = " << currentGesture << "\n";
 						switch(currentGesture){
 							case TAP_GESTURE:{
-								cout << "GESTURE = tap.\n";
+//								cout << "GESTURE = tap.\n";
 								User1.teleport(touches[0].x,touches[0].y);
 								User1.getDisc1().activate(false);
 								User1.getWedge1().activate(false);
@@ -344,14 +371,14 @@ int Application::touch_main(){
 								break;
 							}
 							case DISC_GESTURE:{
-								cout << "GESTURE = disc.\n";
+//								cout << "GESTURE = disc.\n";
 								User1.getDisc1().activate(true);
 								User1.activateInsideRabbits(AllRabbits);
 								calculateChannels();
 								break;
 							}
 							case WEDGE_GESTURE:{
-								cout << "GESTURE = wedge.\n";
+//								cout << "GESTURE = wedge.\n";
 								// todo if no disc, can have no wedge. is that what we want to do?
 								User1.getWedge1().activate(true);
 								User1.activateInsideRabbits(AllRabbits);
@@ -359,7 +386,7 @@ int Application::touch_main(){
 								break;
 							}
 							case INVALID_GESTURE:{
-								cout << "GESTURE = invalid.\n";
+//								cout << "GESTURE = invalid.\n";
 								User1.getDisc1().activate(false);
 								User1.getWedge1().activate(false);
 								calculateChannels();
@@ -369,7 +396,7 @@ int Application::touch_main(){
 								break;
 							}
 						} //end switch currentGesture
-						ssbtsound.flipChannels();
+						ssbtsound.flipChannels(true);
 						accept_more_touches = true;
 						gesture_identified = false;						// lock out id_gesture() to control flow
 						currentGesture = NO_GESTURE;					// lock out switch currentGesture
@@ -410,7 +437,7 @@ int Application::touch_main(){
 		// and we're not accepting more touches until audio display flip
 		if(!accept_more_touches && !gesture_identified){		// touch screen is blocked from taking more gestures &&
 			currentGesture = id_gesture();
-			cout << "id_gesture = " << currentGesture << "\n";
+//			cout << "id_gesture = " << currentGesture << "\n";
 			gesture_identified = true;						// lock us out from indentifying the same gesture many times
 
 		} //end if accept_more_touches and !gesture_identified
@@ -426,9 +453,9 @@ void Application::printTouches(){ // for debugging
 }
 
 void Application::initAllRabbits(void){
-//	cout << "User coords: " << User1.getTrueX() << ", " << User1.getTrueY() << "\n";
-	int rx[NUMRABBITS] = {0, 400, 800, 800};
-	int ry[NUMRABBITS] = {0, 200, 400, 0};
+	// evenly spaced, fixed x-axis, variable y-axis 
+	int rx[NUMRABBITS] = {0, 266, 533, 800};
+	int ry[NUMRABBITS] = {0, 0, 0, 0};
 
 	for(int i = 0; i < NUMRABBITS; i++){
 		// a=rabbit_id, b=is_fox, c=is_rabbit, x=truex, y=truey, userx, usery // put this here to help you write the next line
@@ -472,7 +499,7 @@ void Application::calculateChannels(){
 	// modify application class attribute r2rdistances
 	for(int i = 1; i < NUMRABBITS; i++){
 		r2rdistances[i-1] = abs(sqrt(pow(AllRabbits[i].getTrueX() - AllRabbits[i-1].getTrueX(), 2) + pow(AllRabbits[i].getTrueY() - AllRabbits[i-1].getTrueY(), 2)));// this is an integer, not a double. we are rounding.
-		cout << "r2rdistances[i-1] = " << r2rdistances[i-1] << "\n";
+//		cout << "r2rdistances[i-1] = " << r2rdistances[i-1] << "\n";
 	}
 
 	// are you very close to a fox?

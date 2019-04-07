@@ -48,7 +48,7 @@ void Rabbit::initRabbit(int a, bool b, bool c, int x, int y, int userx, int user
 
 void Rabbit::calcDistanceToUser(int userx, int usery){
 	distance_to_user = abs(sqrt(pow(userx - truex, 2) + pow(usery - truey, 2)));                   // this is an integer, not a double. we are rounding.
-  distance_complement = (((float)1) - (/*NEARSIGHTEDNESS*/ * (distance_to_user/(SCREENDIAGONAL(SCREENW,SCREENH)/2))));   // complement distance to amplitude
+  distance_complement = pow((((float)1) - (/*NEARSIGHTEDNESS * */ (distance_to_user/(SCREENDIAGONAL(SCREENW,SCREENH))))),6);   // complement distance to amplitude
 //  cout << "distance_to_user: " << distance_to_user << "distance_complement: " << distance_complement << "\n";
 }
 

@@ -7,6 +7,8 @@
 #include <allegro5/allegro.h>
 #include "rabbit.h"
 #include "user.h"
+#include "ssbtgpio.h"
+#include <thread>	// for threads 
 
 #ifndef SSBTSOUND_H					// idk why it seems i can redefine rabbit.h to my hearts content! by the way, pragma once takes care of this
 #include "ssbtsound.h"
@@ -61,7 +63,7 @@ public:
 
 	Touch touches[MAX_TOUCHES];				// stores the latest MAX_TOUCHES coordinates of latest fingers (can fill entire array with one finger swipe)
 	Touch fingers[MAX_TOUCHES];				// stores one coordinate per MAX_TOUCHES fingers
-  Rabbit AllRabbits[TOTALRABBITS];
+  Rabbit AllRabbits[NUMRABBITS];
 	User User1;
 
 	// todo: private
@@ -97,11 +99,14 @@ public:
 	gesture_t id_gesture(void);
 	void draw_gesture(void);
 
-	bool mode_flags[8]= {false, false, false, false, false, false, false, false};	// we can do that here, its an array
+	bool mode_flags[8]= {false, false, false, false, false, false, false, false};
 	bool convertArgv1(int);
 	void echoMode();
 	void askMode();
 
+	void ssbtgpiof(void);
+	thread makeThread(void);
+	
 private:
 	Application& getApplication(void);
 	gesture_t currentGesture;
@@ -109,6 +114,9 @@ private:
 	int r2rdistances[NUMRABBITS-1] = {};
 	int song;
 	bool fpsready;
+	//pthread_t gpiot;
+	thread gpiot;
+	SSBTGPIO ssbtgpio;
 };
 
 #endif

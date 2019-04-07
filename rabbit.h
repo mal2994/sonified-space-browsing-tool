@@ -1,7 +1,7 @@
 #ifndef RABBIT_H
 #define RABBIT_H
 
-#define TOTALRABBITS  4       // array size   // todo doesnt seem to be used...reasonably so
+#define TOTALRABBITS  4       // array size   // todo doesnt seem to be used...reasonably so...anyway these should be moved to app.h 
 #define NUMRABBITS    4       // total used
 
 class Rabbit {

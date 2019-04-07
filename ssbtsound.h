@@ -17,7 +17,7 @@ class Ssbtsound
 		void setDistanceChn(int, float);
 		void setAngleChn(int, float);
 		void setDrumAckAmp(float);	// usually 0.0 or 1.0
-		void flipChannels(void);
+		void flipChannels(bool);
 		// CONSTANT MEMBER FUNCTIONS //
 		void compileCsound(bool*);
 		int startPerformanceThread();
@@ -31,8 +31,8 @@ class Ssbtsound
 	private:
 		CsoundPerformanceThread* perfThread;
 		bool cswaitstate;
-		float distance_chns[NUMRABBITS];						// they might be called software buses, but the Csound API says SetChannel() so...
-		float angle_chns[NUMRABBITS];
+		float distance_chns[NUMRABBITS];						// software buses to Csound 
+		float angle_chns[NUMRABBITS];								// software buses to Csound 
 		float drumackamp;
 		float swishamp;
 		int song;
