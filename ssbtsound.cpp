@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include "ssbtsound.h"
 #include "application.h"
+#include "constants.h"
 
 using namespace std;
 
@@ -68,33 +69,28 @@ void Ssbtsound::flipChannels(bool newsong){	// similar to allegro_flip_display..
 	char bufferA[7];		// todo would 8 be ok so we can do more than 9 rabbits?
 											// ^ to pass a channel name as string to csound
 
-	for(int i = 0; i < NUMRABBITS; i++){
+	for(int i = 0; i < NUMINSTR; i++){
 		sprintf(bufferD, "r%ddistance", i);
 		csound->SetChannel(bufferD, distance_chns[i]);		// example: chnset 20, "r0distance"
-//		cout << "Rabbit " << i << " distance channel = " << distance_chns[i] << "\n";
+		cout << "Rabbit " << i << " distance channel = " << distance_chns[i] << "\n";
 
 		sprintf(bufferA, "r%dangle", i);
 		csound->SetChannel(bufferA, angle_chns[i]);			// example: chnset 180, "r0angle"
-//		cout << "Rabbit " << i << " angle channel = " << angle_chns[i] << "\n";
+		cout << "Rabbit " << i << " angle channel = " << angle_chns[i] << "\n";
 	}
 
-	// "you've got the fox" earcon
-//	cout << "swish amp = " << swishamp << "\n";
-	csound->SetChannel("swishamp",swishamp);
+	csound->SetChannel("swishamp",swishamp);					// "you've got the fox" earcon
 
 	if(newsong){
-		// change song
-		if(firstcall){
-			firstcall = false;
-		}else
-		{
 			song = (song+1)%NUMSONGS;
 //			cout << "cpp song: " << (float)song << "\n";
 			csound->SetChannel("song",(float)song);
-		}
 	}
+		/*}
+	}*/
 	//	cout << "ssbtsound flipped the channels.\n";
 }
+
 // CONSTANT MEMBER FUNCTIONS //
 int Ssbtsound::startPerformanceThread(){
 	perfThread->Play();

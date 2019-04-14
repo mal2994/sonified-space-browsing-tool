@@ -1,5 +1,6 @@
 // todo hrtf
 #include "application.h"
+#include "constants.h"
 #include <allegro5/allegro.h>
 #include <iostream>
 #include <stdio.h> // for sscanf()

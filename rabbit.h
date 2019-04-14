@@ -1,8 +1,9 @@
 #ifndef RABBIT_H
 #define RABBIT_H
+//#include "application.h"
+//#include "constants.h"
+//#define TOTALRABBITS  4       // array size   // todo doesnt seem to be used...reasonably so...anyway these should be moved to app.h
 
-#define TOTALRABBITS  4       // array size   // todo doesnt seem to be used...reasonably so...anyway these should be moved to app.h 
-#define NUMRABBITS    4       // total used
 
 class Rabbit {
 public:
@@ -11,6 +12,8 @@ public:
    ~Rabbit();
 
    // MODIFICATION MEMBER FUNCTIONS mutators
+   void setRabbitId(int);
+	 void setFox(bool);
    void setTrueX(int);
    void setTrueY(int);
    void setTrueXandTrueY(int, int);

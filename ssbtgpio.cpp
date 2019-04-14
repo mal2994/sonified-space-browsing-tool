@@ -12,6 +12,7 @@ int SSBTGPIO::setUpPins(){
 	if(wiringPiSetup() == -1) return -1;
 	pinMode(MPLXR0, OUTPUT);
 	pinMode(MPLXR1, OUTPUT);
+	pinMode(MPLXR2, OUTPUT);
 	pinMode(IN0, INPUT);
 	pinMode(IN1, INPUT);
 	pinMode(IN2, INPUT);
@@ -23,17 +24,27 @@ int SSBTGPIO::setUpPins(){
 	return 0; // no error
 }
 
-
-int SSBTGPIO::readChn(int chn){					// return integer value of 4-bit read 0-15
+int SSBTGPIO::readChn(int chn){					// request one of five channels from mux, return integer value of 4-bit read 0-15
 	// select channel from multiplexer
-	if(chn>=2){
-		digitalWrite(MPLXR1,1);
-	}else{
+	if(chn == 4){
+		digitalWrite(MPLXR2,1);
 		digitalWrite(MPLXR1,0);
-	}
-	if(chn%2==1){
+		digitalWrite(MPLXR0,0);
+	}else if(chn == 3){
+		digitalWrite(MPLXR2,0);
+		digitalWrite(MPLXR1,1);
 		digitalWrite(MPLXR0,1);
-	}else{
+	}else if(chn == 2){
+		digitalWrite(MPLXR2,0);
+		digitalWrite(MPLXR1,1);
+		digitalWrite(MPLXR0,0);
+	}else if(chn == 1){
+		digitalWrite(MPLXR2,0);
+		digitalWrite(MPLXR1,0);
+		digitalWrite(MPLXR0,1);
+	}else if(chn == 0){
+		digitalWrite(MPLXR2,0);
+		digitalWrite(MPLXR1,0);
 		digitalWrite(MPLXR0,0);
 	}
 	
