@@ -1,8 +1,9 @@
 #ifndef RABBIT_H
 #define RABBIT_H
+//#include "application.h"
+//#include "constants.h"
+//#define TOTALRABBITS  4       // array size   // todo doesnt seem to be used...reasonably so...anyway these should be moved to app.h
 
-#define TOTALRABBITS  4       // array size   // todo doesnt seem to be used...reasonably so...anyway these should be moved to app.h 
-#define NUMRABBITS    4       // total used
 
 class Rabbit {
 public:
@@ -11,11 +12,15 @@ public:
    ~Rabbit();
 
    // MODIFICATION MEMBER FUNCTIONS mutators
+   void setRabbitId(int);
+	 void setFox(bool);
    void setTrueX(int);
    void setTrueY(int);
    void setTrueXandTrueY(int, int);
    void calcDistanceToUser(int, int);
    void calcAngleToUser(int, int);
+   void calcDistanceToCenter(int, int);
+   void calcAngleToCenter(int,int);
    void activate(bool);
    void initRabbit(int, bool, bool, int, int, int, int);
 
@@ -25,6 +30,8 @@ public:
    int getRabbitId();
    float getDistanceToUser();
    float getDistanceComplement();
+   float getDistanceToCenter();
+   float getAngleToCenter();
    float getAngleToUser();
    bool isActivated();
    bool isFox();
@@ -36,6 +43,8 @@ private:
    int rabbit_id;
    float distance_to_user;
    float distance_complement;
+   float distance_to_center;
+   float angle_to_center;
    float angle_to_user;
    bool activated;
    bool is_rabbit;

@@ -1,6 +1,8 @@
 #include <iostream>
 #include "user.h"
 #include "rabbit.h"
+//#include "application.h"
+#include "constants.h"
 //#include "ssbtsound.h" //never tried this
 
 using namespace std;
@@ -50,8 +52,8 @@ void User::activateInsideRabbits(Rabbit AllRabbits[]){
   // User has a disc, check for wedge later
   if(Disc1.isActivated()){
   	for(int i=0;i<NUMRABBITS;i++){
-  		if(AllRabbits[i].getDistanceToUser() > getDisc1().getRadius1()
-  		&& AllRabbits[i].getDistanceToUser() < getDisc1().getRadius2()){
+  		if(AllRabbits[i].getDistanceToCenter() > getDisc1().getRadius1()
+  		&& AllRabbits[i].getDistanceToCenter() < getDisc1().getRadius2()){
   			AllRabbits[i].activate(true);
   		}else{
   			AllRabbits[i].activate(false);
@@ -63,8 +65,8 @@ void User::activateInsideRabbits(Rabbit AllRabbits[]){
   // User has a wedge
   if(Wedge1.isActivated()){
     for(int i=0;i<NUMRABBITS;i++){
-      if(AllRabbits[i].getAngleToUser() > getWedge1().getAngle1()
-      && AllRabbits[i].getAngleToUser() < getWedge1().getAngle2()){
+      if(AllRabbits[i].getAngleToCenter() > getWedge1().getAngle1()
+      && AllRabbits[i].getAngleToCenter() < getWedge1().getAngle2()){
         AllRabbits[i].activate(true);
       }else{
         AllRabbits[i].activate(false);

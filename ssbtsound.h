@@ -4,8 +4,8 @@
 #include <csound/csound.hpp>
 #include <csound/csPerfThread.hpp>
 #include "rabbit.h"									// for NUMRABBITS
-
-#define NUMSONGS 2									// remember that in csound the songs are 0-based numbering (so put a -1 on NUMSONGS)
+//#include "application.h"
+#include "constants.h"
 
 class Ssbtsound
 {
@@ -31,8 +31,8 @@ class Ssbtsound
 	private:
 		CsoundPerformanceThread* perfThread;
 		bool cswaitstate;
-		float distance_chns[NUMRABBITS];						// software buses to Csound 
-		float angle_chns[NUMRABBITS];								// software buses to Csound 
+		float distance_chns[NUMINSTR];						// software buses to Csound
+		float angle_chns[NUMINSTR];								// software buses to Csound
 		float drumackamp;
 		float swishamp;
 		int song;

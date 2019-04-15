@@ -1,6 +1,8 @@
 #ifndef USER_H
 #define USER_H
 
+//#include "application.h"
+#include "constants.h"
 #include "rabbit.h"
 
 #ifndef SSBTSOUND_H					// idk why it seems i can redefine rabbit.h to my hearts content!

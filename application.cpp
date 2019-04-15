@@ -1,20 +1,30 @@
-// some keywords to search for when making new patches: TODO, CHANGE, MOVED, or just /*
+// some keywords to search for when making new patches: TODO, CHANGE, MOVED, or just
 #include <iostream>
 #include <cstdlib>
 #include <cmath>        // for pow()
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro.h>
+#include <allegro5/allegro_ttf.h>
+#include <allegro5/allegro_font.h>
 #include "rabbit.h"
 #include "user.h"
 //#include "touch.h"     //redefinition
 #include "application.h"
+#include "constants.h"
 //#include "ssbtsound.h" //redefinition
 #include <csound/csound.hpp>
 #include <csound/csPerfThread.hpp>
 #include <signal.h>		// for sigaction
 #include <unistd.h>		// for sigaction
-#include <thread>	// for threads 
+#include <thread>			// for threads
+#include <time.h>
+#include <fstream>		// for read from file
+#include <sstream>		// for read from file
+#include <string>		// for read from file
+#include <vector>		// for read from file
+
+
 using namespace std;
 
 // APPLICATION CONSTRUCTOR
@@ -31,6 +41,7 @@ Application::Application(){
 	gesture_identified = false;
 	measureNumber = 0;
 	currentGesture = NO_GESTURE;
+	fox_voltage = 0;
 	//mode_flags = {false, false, false, false, false, false, false, false};
   //Ssbtsound ssbtsound;
   //struct sigaction sigIntHandler;
@@ -38,7 +49,10 @@ Application::Application(){
   sigemptyset(&sigIntHandler.sa_mask);
   sigIntHandler.sa_flags = 0;
   sigaction(SIGINT, &sigIntHandler, NULL);
-  //initAllRabbits(); 																								// nice bug lol
+  found_fox = true;		// start program by reading from file
+	draw_file_complete = false;
+	draw_found = false;
+
 }
 // APPLICATION DESTRUCTOR
 Application::~Application(){
@@ -58,7 +72,7 @@ int Application::initAllegro5(){
 	 cout << "Could not create Allegro instance. \n";
 	 return -1;
 	}
-	
+
 	// in the queue go the signals from the different threads, touch input, display window, timer
 	// use a single event queue to prevent having to poll both the queue AND the event!
 	queue = al_create_event_queue();
@@ -72,15 +86,18 @@ int Application::initAllegro5(){
 	}
 
 	if(mode_flags[TOUCH_FLAG]){
+		al_init_font_addon();
+		al_init_ttf_addon();
 		al_init_primitives_addon();                           // primitivies are basic graphics
-		//al_get_display_mode(al_get_num_display_modes() - 1, &disp_data); 		// fullscreen
-		//al_set_new_display_flags(ALLEGRO_FULLSCREEN);                    		// fullscreen
+//		al_get_display_mode(al_get_num_display_modes() - 1, &disp_data); 		// fullscreen
+//		al_set_new_display_flags(ALLEGRO_FULLSCREEN);                    		// fullscreen
 		//display = al_create_display(disp_data.width, disp_data.height);                          // make window in OS
 		display = al_create_display(SCREENW, SCREENH);                          // make window in OS
 		if (!display){
 			cout << "Could not create display. \n";
 			return -1;
 		}
+		font = al_load_ttf_font("./AmaticSC-Regular.ttf", 64, 0);
 		al_register_event_source(queue, al_get_display_event_source(display));	// associate display with event queue
 		al_hide_mouse_cursor(display);																	 // hides cursor in the window
 		if (!al_install_touch_input()){
@@ -89,7 +106,6 @@ int Application::initAllegro5(){
 		  return -1;
 		}
 		al_register_event_source(queue, al_get_touch_input_event_source());	// associate touch with event queue
-
 
 	}else{
 		// touch screen is off, use keyboard for user input
@@ -130,7 +146,8 @@ int Application::initAllegro5(){
   // associate the queue and the event sources (no error checking and register them even if we dont have them? todo)
 	al_register_event_source(queue, al_get_timer_event_source(timer));
 	al_register_event_source(queue, al_get_timer_event_source(metronome));
-	
+
+
 	// GPIO set up
 //	pthread_create(&gpiot, NULL, *this->ssbtgpiot);// create thread for reading GPIO
 	gpiot = this->makeThread();
@@ -142,26 +159,22 @@ thread Application::makeThread(){
 }
 
 void Application::ssbtgpiof(){
-	int val = 0;
+/* GPIO_FLAG
 	if(ssbtgpio.setUpPins() == 1){
 		return;
-	}
-	while(1){
-		AllRabbits[0].setTrueY(((float)(ssbtgpio.readChn(0) / 15)) * SCREENH);
-		cout << "Rabbit0 = 0, " << AllRabbits[0].getTrueY() << "\n";
-		AllRabbits[1].setTrueY(((float)(ssbtgpio.readChn(1) / 15)) * SCREENH);
-		cout << "Rabbit1 = 266, " << AllRabbits[1].getTrueY() << "\n";
-		AllRabbits[2].setTrueY(((float)(ssbtgpio.readChn(2) / 15)) * SCREENH);
-		cout << "Rabbit2 = 566, " << AllRabbits[2].getTrueY() << "\n";
-		AllRabbits[3].setTrueY(((float)(ssbtgpio.readChn(3) / 15)) * SCREENH);
-		cout << "Rabbit3 = 800, " << AllRabbits[3].getTrueY() << "\n";
-		calculateChannels(); 																	// user coordinate updates are locked to metronome, this is fine.
-		ssbtsound.flipChannels(false);												// flip channels but don't change song
-	}
+	} */
+
+		/* the gpio rabbit moving */ //mode_flags[GPIO_FLAG] etc..
+//		AllRabbits[0].setTrueY(((float)(ssbtgpio.readChn(0) / 15)) * SCREENH);
+//		AllRabbits[1].setTrueY(((float)(ssbtgpio.readChn(1) / 15)) * SCREENH);
+//		AllRabbits[2].setTrueY(((float)(ssbtgpio.readChn(2) / 15)) * SCREENH);
+//		AllRabbits[3].setTrueY(((float)(ssbtgpio.readChn(3) / 15)) * SCREENH);
+//		fox_voltage = (((float)ssbtgpio.readChn(4) / 15) * SCREENH);
+
 	return;
 }
 
-void Application::draw_touches(int num, Touch touches[]){	//todo these are part of the class. can we get rid of this?
+void Application::draw_touches(int num, Touch touches[]){
    for (int i = 0; i < num; i++) {
       int x = touches[i].x;
       int y = touches[i].y;
@@ -183,14 +196,14 @@ void Application::draw_gesture(){
 	float angle1 = 0, angle2 = 0;
  	bool no_center = true;
 
-	// draw some lines to split up the screen 
-	al_draw_line(133, 0, 133, 400, al_map_rgb(64, 64, 64), 3);
-	al_draw_line(399, 0, 399, 400, al_map_rgb(64, 64, 64), 3);
-	al_draw_line(665, 0, 665, 400, al_map_rgb(64, 64, 64), 3);
-	
  	// draw the center of the screen
  	al_draw_rectangle(CENTERX+CENTR_STY, CENTERY+CENTR_STY, CENTERX-CENTR_STY, CENTERY-CENTR_STY, al_map_rgb(64, 64, 64), 5);
 	draw_touches(num_touches, touches);				// always draw fingers
+
+	// draw file complete
+	if(draw_file_complete){
+		al_draw_text(font, al_map_rgb(0, 0, 0), 0, 0, 0, "YOU WIN!!!");
+	}
 
 	// if two fingers...invalid for now. this would be pinch or pull.
 	//if(num_touches == 2) return;
@@ -220,6 +233,8 @@ void Application::draw_gesture(){
 		// we have looked through all of the fingers and found none of them were at the center:
 		if(no_center){
 //			cout << "you have no fingers at the center of the screen.\n";
+				al_draw_circle(CENTERX, CENTERY, 100, al_map_rgb(255, 0, 0), 5);		//al_flip_display() will take care of these
+				al_draw_circle(CENTERX, CENTERY, 200, al_map_rgb(255, 0, 0), 5);
 			return;
 		}else{	// one of the fingers was at the center
 			if(abs(angle1-angle2)<GEST_ANGLE_STY && abs(radius1-radius2)>GEST_RADII_STY){
@@ -295,12 +310,14 @@ int Application::touch_main(){
 
     if(mode_flags[TOUCH_FLAG]){ //if graphics/touch enabled.
 		  // only draw when all other events are complete
-		if (!background && al_is_event_queue_empty(queue)) { 	  // background is true when android/ios user switches apps.
-	        al_clear_to_color(al_map_rgb(255, 255, 255));
-	        draw_gesture();
-	        al_flip_display();
+			if (!background && al_is_event_queue_empty(queue)) { 	  // background is true when android/ios user switches apps.
+						al_clear_to_color(al_map_rgb(255, 255, 255));
+						if(draw_found) al_draw_circle(User1.getTrueX(), User1.getTrueY(), 50, al_map_rgb(0, 255, 0), 4); 	// draw user
+						else al_draw_circle(User1.getTrueX(), User1.getTrueY(), 50, al_map_rgb(255, 0, 0), 4); 	// draw user
+						draw_gesture();
+						al_flip_display();
+			}
 		}
-	}
 
 		// sit here until an event of any kind comes in
 		al_wait_for_event(queue, &event);
@@ -336,7 +353,7 @@ int Application::touch_main(){
     				//if (i >= 0 && i < num_touches) {
     				//	touches[i] = touches[num_touches - 1];
     				//	num_touches--;
-    					accept_more_touches = false; 							// this is reset by a timer event later in this function
+    				accept_more_touches = false; 							// this is reset by a timer event later in this function
 						gesture_identified = false;
 						ssbtsound.csound->SetChannel("drumackamp",1.0);				// turn the drum acknowledge on
 
@@ -359,14 +376,31 @@ int Application::touch_main(){
 			case ALLEGRO_EVENT_TIMER: {
 				if (event.timer.source == metronome){       // poll for which timer it is with if statements
 					if(!accept_more_touches && gesture_identified){
-//						cout << "measure: " << measureNumber++ << "\n";
-//						cout << "preempt g = " << currentGesture << "\n";
 						switch(currentGesture){
 							case TAP_GESTURE:{
 //								cout << "GESTURE = tap.\n";
 								User1.teleport(touches[0].x,touches[0].y);
 								User1.getDisc1().activate(false);
 								User1.getWedge1().activate(false);
+								calculateChannels();
+								calcFoxFound();
+								if(found_fox){ // if user got the fox
+									draw_found = true;
+									for(int i=0; i<NUMRABBITS; i++){
+										int result = 0;
+										result = ssbtgpio.readFile();
+										if(result == -1)	exit(0);
+										else if(result == 0){}
+										else if(result == 1) draw_file_complete = true;
+										AllRabbits[i].setTrueX(((float)ssbtgpio.getPoint1()/15)*SCREENW);
+										AllRabbits[i].setTrueY(((float)ssbtgpio.getPoint2()/15)*SCREENH);
+										cout << "NEW POINTS rabbit 0 x = " << AllRabbits[0].getTrueX() << " y = " << AllRabbits[0].getTrueY() << "\n";
+									}
+								}else{
+//									al_draw_circle(User1.getTrueX(), User1.getTrueY(), 50, al_map_rgb(0, 255, 255), 4); 	// draw user
+										draw_found = false;
+								}
+								User1.activateInsideRabbits(AllRabbits);
 								calculateChannels();
 								break;
 							}
@@ -401,11 +435,12 @@ int Application::touch_main(){
 						gesture_identified = false;						// lock out id_gesture() to control flow
 						currentGesture = NO_GESTURE;					// lock out switch currentGesture
 						ssbtsound.setDrumAckAmp(0.0);					// turn off drum acknowledge
-						ssbtsound.setSwishAmp(0.0);
+					//ssbtsound.setSwishAmp(0.0);//todo redundancy
+						found_fox = false;
 						num_touches = 0;								// an event will set this to 0, but we want to clear the display a little early.
 					} //end if !accept_more_touches
 				}else if(event.timer.source == timer){			// poll for which timer it is with if statements
-					
+
 				}
 			} // end timer events
 
@@ -453,13 +488,24 @@ void Application::printTouches(){ // for debugging
 }
 
 void Application::initAllRabbits(void){
-	// evenly spaced, fixed x-axis, variable y-axis 
-	int rx[NUMRABBITS] = {0, 266, 533, 800};
-	int ry[NUMRABBITS] = {0, 0, 0, 0};
+	// place to put your first points read from file temporarily.
+	int rx[NUMRABBITS] = {};
+	int ry[NUMRABBITS] = {};
 
+	// put the first points read from file in the temporary array
+	for(int i=0; i<NUMRABBITS; i++){
+		ssbtgpio.readFile();
+		//AllRabbits[i].setTrueX((float)(ssbtgpio.getPoint1()/15)*SCREENW);
+		//AllRabbits[i].setTrueY((float)(ssbtgpio.getPoint2()/15)*SCREENH);
+		rx[i] = ((float)ssbtgpio.getPoint1()/15)*SCREENW;
+		ry[i] = ((float)ssbtgpio.getPoint2()/15)*SCREENH;
+	}
+
+	// use the temporary array to instantiate rabbits
 	for(int i = 0; i < NUMRABBITS; i++){
 		// a=rabbit_id, b=is_fox, c=is_rabbit, x=truex, y=truey, userx, usery // put this here to help you write the next line
 		AllRabbits[i].initRabbit(i,false,true,rx[i],ry[i],User1.getTrueX(),User1.getTrueY());
+		cout << "NEW POINTS rabbit 0 x = " << AllRabbits[i].getTrueX() << " y = " << AllRabbits[i].getTrueY() << "\n";
 	}
 	User1.activateInsideRabbits(AllRabbits);		// without a disc or wedge we are effectively activating them all
 }
@@ -472,45 +518,72 @@ void Application::messAround(){
 
 void Application::ctrlcHandler(int s){
 	printf("Caught signal %d\n",s);
-	//endAndDestroyCsound();   /* CHANGE: the destructor will take care of this now */
 	exit(0);
 }
 
-// hi debuggers, where are you putting this btw? todo todo todo I think it belongs here or in touch_main. probably touch_main
-//	//User1.activateInsideRabbits(AllRabbits);
 void Application::calculateChannels(){
-
-	// modify all rabbit objects' attributes
+	// modify AllRabbits angles and distances
 	for(int i = 0; i < NUMRABBITS; i++){
-		AllRabbits[i].calcDistanceToUser(User1.getTrueX(), User1.getTrueY());                   // does distance and distance complement
+		AllRabbits[i].calcDistanceToUser(User1.getTrueX(), User1.getTrueY());    // sets distance and distance complement
 		AllRabbits[i].calcAngleToUser(User1.getTrueX(), User1.getTrueY());
 	}
 
-	// modify ssbtsound object attributes with data from rabbit objects' attributes
+	// mute all instruments so the instruments you want will become unmuted later
+	for(int i = 0; i < NUMINSTR; i++){
+		ssbtsound.setDistanceChn(i,0.0);
+		ssbtsound.setAngleChn(i,0.0);
+	}
+
+	// send AllRabbits angles and distances to Csound
 	for(int i = 0; i < NUMRABBITS; i++){
-		if(AllRabbits[i].isActivated()){														// if Rabbit is activated, send its data to csound
-			ssbtsound.setDistanceChn(i,AllRabbits[i].getDistanceComplement());
-			ssbtsound.setAngleChn(i,AllRabbits[i].getAngleToUser());
-		}else{																					// if Rabbit is not activated, turn its volume off
-			ssbtsound.setDistanceChn(i,0.0);
+		if(AllRabbits[i].isActivated()){	// if Rabbit is activated, send its data to csound
+			ssbtsound.setDistanceChn(AllRabbits[i].getRabbitId(),AllRabbits[i].getDistanceComplement());	// instrument swapping in parameter 1 of this line
+			ssbtsound.setAngleChn(AllRabbits[i].getRabbitId(),AllRabbits[i].getAngleToUser());
+		}else{	// if Rabbit is not activated, turn its volume off
+			ssbtsound.setDistanceChn(AllRabbits[i].getRabbitId(),0.0);
 		}
 	}
 
-	// modify application class attribute r2rdistances
+	// calculate r2rdistances
 	for(int i = 1; i < NUMRABBITS; i++){
 		r2rdistances[i-1] = abs(sqrt(pow(AllRabbits[i].getTrueX() - AllRabbits[i-1].getTrueX(), 2) + pow(AllRabbits[i].getTrueY() - AllRabbits[i-1].getTrueY(), 2)));// this is an integer, not a double. we are rounding.
 //		cout << "r2rdistances[i-1] = " << r2rdistances[i-1] << "\n";
 	}
 
-	// are you very close to a fox?
-	ssbtsound.setSwishAmp(0.0);
-	for(int i = 0; i < NUMRABBITS; i++){
-		if(!AllRabbits[i].isFox()){
-			if (AllRabbits[i].getDistanceToUser() < EAR_DIST){
-				ssbtsound.setSwishAmp(1.0);
-			}
+}
+
+void Application::calcFoxFound(){
+	// which rabbits are foxes?
+/*	for(int i = 0; i < NUMRABBITS; i++){
+		if(abs(AllRabbits[i].getTrueY() - fox_voltage) < FOX_STY){
+			AllRabbits[i].setFox(true);
+		}else{
+			AllRabbits[i].setFox(false);				TODO fox_voltage NOT USED & ALWAYS TRUE thats why this is commented out
 		}
+	}*/
+
+	// is user very close to a fox?
+	ssbtsound.setSwishAmp(0.0);
+	found_fox = false;
+	for(int i = 0; i < NUMRABBITS; i++){
+		//if(AllRabbits[i].isFox()){
+			if (AllRabbits[i].getDistanceToUser() < SWISH_DIST){
+				ssbtsound.setSwishAmp(1.0);
+				rotateRabbits();		// change instruments
+				found_fox = true;		// tell data acquisition thread to put new data in rabbits
+				cout << "SWISH!\n";
+			}
+		//}
 	}
+
+	//return found_fox; could do that
+}
+
+void Application::rotateRabbits(){
+  for(int i = 0; i < NUMRABBITS; i++){
+    AllRabbits[i].setRabbitId((AllRabbits[i].getRabbitId()+1)%NUMINSTR);
+		cout << "["<<i<<"]rabbitid = "<< AllRabbits[i].getRabbitId() << "\n";
+  }
 }
 
 bool Application::convertArgv1(int num){
