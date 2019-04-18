@@ -26,6 +26,7 @@ class Ssbtsound
 		float getAngleChn(int);
 		float getDrumAckAmp(void);
 		void setSwishAmp(float);
+		void playAll();
 		Csound* csound;
 
 	private:

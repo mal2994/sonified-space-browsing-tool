@@ -85,16 +85,19 @@ public:
 	thread makeThread(void);
 	void calcFoxFound(void);
 	ALLEGRO_FONT * font;
+	Application& getApplication(void);
+	SSBTGPIO ssbtgpio;
 
 private:
-	Application& getApplication(void);
+
 	gesture_t currentGesture;
 	struct sigaction sigIntHandler;
 	int r2rdistances[NUMRABBITS-1] = {};
 	int song;
 	int fox_voltage;			// use this if you want to differentiate foxes from rabbits
 	thread gpiot;
-	SSBTGPIO ssbtgpio;
+	void isrwrapper(void);
+
 	bool found_fox;
 	bool draw_found;
 	bool draw_file_complete;
