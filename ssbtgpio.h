@@ -13,21 +13,29 @@ using namespace std;
 #define IN3			3 // header pin 15
 #define MPLXR0	4 // header pin 16
 #define MPLXR1	5 // header pin 18
-#define MPLXR2	6 // header pin 22
+#define DAQSW		6 // header pin 22
 
 class SSBTGPIO {
 public:
 	SSBTGPIO();
 	~SSBTGPIO();
 	int setUpPins(void);
-	int readChn(int);					// return integer value of 4-bit read
-	int readFile();
-	int getPoint1(void);
-	int getPoint2(void);
+	 int readADC(int);					// return integer value of 4-bit read
+	 int readFile();
+	 int getPoint1(void);
+	 int getPoint2(void);
+	 int getNumLines(void);
+	 void incLinesDone(void);
+	 void DAQisr(void);
 private:
-	int pins[7] = {0,0,0,0,0,0,0};
-	int point1, point2;
-	ifstream infile;
+	//static int pins[7] = {0,0,0,0,0,0,0};
+	 bool DAQ_flag;
+	 int point1, point2;
+	 ifstream infile;
+	 int numlines;
+	 fstream datafile;
+	 streampos df_begin, df_end, df_cur;
+	 int lines_done;
 };
 
 #endif

@@ -4,14 +4,26 @@
 #include <allegro5/allegro.h>
 #include <iostream>
 #include <stdio.h> // for sscanf()
+#include <wiringPi.h> // for wiringfPiISR() INT_EDGE_FALLING
+#include "ssbtgpio.h"
 
 using namespace std;
+
+Application *application;
+void isrwrapper(void);
 
 int main(int argc, char** argv) {
 	int error = 0, param = 0;
 	char yn = 'n';
 	bool valid = true;
-	Application *application = new Application();
+	//Application *application = new Application();
+	application = new Application();
+
+	if ( wiringPiISR (DAQSW, INT_EDGE_FALLING, &isrwrapper) < 0 ) {
+			cout << "Unable to setup ISR\n";
+			//exit(0); //let them play without it
+	}
+
 
 	if(argc == 2){												// if one parameter given from command line like so: ./ssbt 11100111
 		valid = sscanf(argv[1],"%d",&param);
@@ -46,4 +58,8 @@ int main(int argc, char** argv) {
 
 	cout << "finished" << "\n";
 	return 0;
+}
+
+void isrwrapper(){
+	application->ssbtgpio.DAQisr();
 }

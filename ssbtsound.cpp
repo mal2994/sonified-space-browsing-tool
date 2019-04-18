@@ -64,6 +64,14 @@ void Ssbtsound::setSwishAmp(float a){
 	swishamp = a;
 }
 
+void Ssbtsound::playAll(){
+	for(int i=0;i<NUMINSTR;i++){
+		distance_chns[i] = 0.75;
+		angle_chns[i] = 0;
+	}
+	flipChannels(false);
+}
+
 void Ssbtsound::flipChannels(bool newsong){	// similar to allegro_flip_display...set em at different times then flip em all at once
 	char bufferD[10];		// todo would 11 be ok so we can do more than 9 rabbits?
 	char bufferA[7];		// todo would 8 be ok so we can do more than 9 rabbits?

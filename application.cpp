@@ -12,6 +12,7 @@
 //#include "touch.h"     //redefinition
 #include "application.h"
 #include "constants.h"
+#include "ssbtgpio.h"
 //#include "ssbtsound.h" //redefinition
 #include <csound/csound.hpp>
 #include <csound/csPerfThread.hpp>
@@ -23,7 +24,9 @@
 #include <sstream>		// for read from file
 #include <string>		// for read from file
 #include <vector>		// for read from file
+#include <wiringPi.h> // for wiringfPiISR() INT_EDGE_FALLING
 
+void isrwrapper(void);
 
 using namespace std;
 
@@ -52,7 +55,7 @@ Application::Application(){
   found_fox = true;		// start program by reading from file
 	draw_file_complete = false;
 	draw_found = false;
-
+	ssbtgpio.setUpPins();
 }
 // APPLICATION DESTRUCTOR
 Application::~Application(){
@@ -89,9 +92,9 @@ int Application::initAllegro5(){
 		al_init_font_addon();
 		al_init_ttf_addon();
 		al_init_primitives_addon();                           // primitivies are basic graphics
-//		al_get_display_mode(al_get_num_display_modes() - 1, &disp_data); 		// fullscreen
-//		al_set_new_display_flags(ALLEGRO_FULLSCREEN);                    		// fullscreen
-		//display = al_create_display(disp_data.width, disp_data.height);                          // make window in OS
+		//al_get_display_mode(al_get_num_display_modes() - 1, &disp_data); 		// fullscreen
+		//al_set_new_display_flags(ALLEGRO_FULLSCREEN);                    		// fullscreen
+		//display = al_create_display(disp_data.width, disp_data.height);     // make window in OS
 		display = al_create_display(SCREENW, SCREENH);                          // make window in OS
 		if (!display){
 			cout << "Could not create display. \n";
@@ -147,31 +150,26 @@ int Application::initAllegro5(){
 	al_register_event_source(queue, al_get_timer_event_source(timer));
 	al_register_event_source(queue, al_get_timer_event_source(metronome));
 
+	//gpiot = this->makeThread();
 
-	// GPIO set up
-//	pthread_create(&gpiot, NULL, *this->ssbtgpiot);// create thread for reading GPIO
-	gpiot = this->makeThread();
   return 0;
 }
 
-thread Application::makeThread(){
+/*thread Application::makeThread(){
 	return thread([=]{ssbtgpiof();});
-}
+}*/
 
-void Application::ssbtgpiof(){
-/* GPIO_FLAG
-	if(ssbtgpio.setUpPins() == 1){
-		return;
-	} */
-
-		/* the gpio rabbit moving */ //mode_flags[GPIO_FLAG] etc..
-//		AllRabbits[0].setTrueY(((float)(ssbtgpio.readChn(0) / 15)) * SCREENH);
-//		AllRabbits[1].setTrueY(((float)(ssbtgpio.readChn(1) / 15)) * SCREENH);
-//		AllRabbits[2].setTrueY(((float)(ssbtgpio.readChn(2) / 15)) * SCREENH);
-//		AllRabbits[3].setTrueY(((float)(ssbtgpio.readChn(3) / 15)) * SCREENH);
-//		fox_voltage = (((float)ssbtgpio.readChn(4) / 15) * SCREENH);
-
+/*void Application::ssbtgpiof(){
+	if ( wiringPiISR (DAQSW, INT_EDGE_FALLING, isrwrapper) < 0 ) {
+			cout << "Unable to setup ISR\n";
+			//exit(0); //let them play without it
+	}
 	return;
+}*/
+
+void Application::isrwrapper(){
+///void isrwrapper(){
+	ssbtgpio.DAQisr();
 }
 
 void Application::draw_touches(int num, Touch touches[]){
@@ -203,8 +201,16 @@ void Application::draw_gesture(){
 	// draw file complete
 	if(draw_file_complete){
 		al_draw_text(font, al_map_rgb(0, 0, 0), 0, 0, 0, "YOU WIN!!!");
-	}
+		ssbtsound.playAll();
+	}else{
 
+	// convert number to string
+	ostringstream ossNumLines;
+	ossNumLines << ssbtgpio.getNumLines();
+	string sNumLines = ossNumLines.str();
+	const char* cNumLines = sNumLines.c_str();
+	al_draw_text(font, al_map_rgb(0,0,0), 0, 300, 0, cNumLines);
+	}
 	// if two fingers...invalid for now. this would be pinch or pull.
 	//if(num_touches == 2) return;
 
@@ -385,6 +391,7 @@ int Application::touch_main(){
 								calculateChannels();
 								calcFoxFound();
 								if(found_fox){ // if user got the fox
+									ssbtgpio.incLinesDone();
 									draw_found = true;
 									for(int i=0; i<NUMRABBITS; i++){
 										int result = 0;
