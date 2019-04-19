@@ -1,8 +1,8 @@
 # sonified-space-browsing-tool
-a prototype that creates sound-emitting objects in a 5.1 surround space and allows a user to explore the space.
+A prototype that creates sound-emitting objects in a 5.1 surround space and allows a user to explore the space.
 
 OVERVIEW:
-Experiment with the effectiveness of mapping datasets to amplitude and panning parameters. This code may need work to run on your machine.
+> Experiment with the effectiveness of mapping datasets to amplitude and panning parameters. This code may need work to run on your machine.
 
 SYSTEM RECOMMENDATIONS:
 * Raspbian Stretch (Linux Kernal 4.14)
