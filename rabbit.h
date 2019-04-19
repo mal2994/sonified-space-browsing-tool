@@ -1,9 +1,5 @@
 #ifndef RABBIT_H
 #define RABBIT_H
-//#include "application.h"
-//#include "constants.h"
-//#define TOTALRABBITS  4       // array size   // todo doesnt seem to be used...reasonably so...anyway these should be moved to app.h
-
 
 class Rabbit {
 public:

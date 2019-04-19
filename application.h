@@ -1,7 +1,5 @@
-// some keywords to search for when making new patches: TODO, CHANGE, MOVED, or just /*
 #ifndef APPLICATION_H_
 #define APPLICATION_H_
-
 #include <signal.h>		// for sigaction
 #include <unistd.h>		// for sigaction
 #include <allegro5/allegro.h>
@@ -11,14 +9,11 @@
 #include "user.h"
 #include "ssbtgpio.h"
 #include "constants.h"
-#include <thread>	// for threads
-
-#ifndef SSBTSOUND_H					// idk why it seems i can redefine rabbit.h to my hearts content! by the way, pragma once takes care of this
+#include <thread>
+#ifndef SSBTSOUND_H
 #include "ssbtsound.h"
 #endif
-
 using namespace std;
-
 
 enum gesture { TAP_GESTURE, DISC_GESTURE, WEDGE_GESTURE, INVALID_GESTURE, NO_GESTURE };
 typedef enum gesture gesture_t;
@@ -37,12 +32,11 @@ public:
    Application();
    ~Application();
 
-	Touch touches[MAX_TOUCHES];				// stores the latest MAX_TOUCHES coordinates of latest fingers (can fill entire array with one finger swipe)
-	Touch fingers[MAX_TOUCHES];				// stores one coordinate per MAX_TOUCHES fingers
+	Touch touches[MAX_TOUCHES];
+	Touch fingers[MAX_TOUCHES];
   Rabbit AllRabbits[NUMRABBITS];
 	User User1;
 
-	// todo: private
 	ALLEGRO_DISPLAY *display;
   ALLEGRO_TIMER *timer;
 	ALLEGRO_TIMER *metronome;
@@ -65,9 +59,7 @@ public:
 	int touch_main(void);
 	void ctrlcHandler(int);
 	void calculateChannels(void);
-
 	void messAround(void);
-
 	void draw_touches(int num, Touch touches[]);
 	int which_finger(int id, int num, Touch touches[]);
 	void printTouches(void);
@@ -89,19 +81,16 @@ public:
 	SSBTGPIO ssbtgpio;
 
 private:
-
 	gesture_t currentGesture;
 	struct sigaction sigIntHandler;
 	int r2rdistances[NUMRABBITS-1] = {};
 	int song;
-	int fox_voltage;			// use this if you want to differentiate foxes from rabbits
+	int fox_voltage;
 	thread gpiot;
 	void isrwrapper(void);
-
 	bool found_fox;
 	bool draw_found;
 	bool draw_file_complete;
-
 };
 
 #endif

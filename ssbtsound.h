@@ -1,10 +1,9 @@
-#pragma once // todo when ifndef in ssbtsound.h AND every file that includes it STILL doesnt do the trick, pragma once.
+#pragma once
 #ifndef SSBTSOUND_H
 #define SBBTSOUND_H
 #include <csound/csound.hpp>
 #include <csound/csPerfThread.hpp>
-#include "rabbit.h"									// for NUMRABBITS
-//#include "application.h"
+#include "rabbit.h"
 #include "constants.h"
 
 class Ssbtsound
@@ -16,7 +15,7 @@ class Ssbtsound
 		void setCsWaitState(bool);
 		void setDistanceChn(int, float);
 		void setAngleChn(int, float);
-		void setDrumAckAmp(float);	// usually 0.0 or 1.0
+		void setDrumAckAmp(float);
 		void flipChannels(bool);
 		// CONSTANT MEMBER FUNCTIONS //
 		void compileCsound(bool*);
@@ -32,8 +31,8 @@ class Ssbtsound
 	private:
 		CsoundPerformanceThread* perfThread;
 		bool cswaitstate;
-		float distance_chns[NUMINSTR];						// software buses to Csound
-		float angle_chns[NUMINSTR];								// software buses to Csound
+		float distance_chns[NUMINSTR];	// software buses to Csound
+		float angle_chns[NUMINSTR];			// software buses to Csound
 		float drumackamp;
 		float swishamp;
 		int song;

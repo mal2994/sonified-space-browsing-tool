@@ -1,15 +1,10 @@
 #ifndef USER_H
 #define USER_H
-
-//#include "application.h"
 #include "constants.h"
 #include "rabbit.h"
-
-#ifndef SSBTSOUND_H					// idk why it seems i can redefine rabbit.h to my hearts content!
+#ifndef SSBTSOUND_H
 #include "ssbtsound.h"
 #endif
-
-//#include "application.h"
 
 class Wedge {
 public:
@@ -23,7 +18,7 @@ public:
    int getAngle2();
    bool isActivated();
 private:
-	int angle1;														// the small one 0-359 (TODO techincally these are azimuths...)
+	int angle1;														// the small one 0-359
 	int angle2;														// the big one 0-359
 	bool activated;
 };
@@ -56,14 +51,14 @@ public:
    /* MODIFICATION MEMBER FUNCTIONS */
    void setTrueX(int);
    void setTrueY(int);
-	 void teleport(int, int);		// fun fact arrays are passed by pointer by default
+	 void teleport(int, int);
 
    /* CONSTANT MEMBER FUNCTIONS */
    int getTrueX();
    int getTrueY();
    Disc& getDisc1();
    Wedge& getWedge1();
-   void activateInsideRabbits(Rabbit[]); // formerly known as muteRabbits() in the specification document.
+   void activateInsideRabbits(Rabbit[]);
 
 private:
    int truex;

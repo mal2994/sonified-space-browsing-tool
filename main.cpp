@@ -1,4 +1,3 @@
-// todo hrtf
 #include "application.h"
 #include "constants.h"
 #include <allegro5/allegro.h>
@@ -6,7 +5,6 @@
 #include <stdio.h> // for sscanf()
 #include <wiringPi.h> // for wiringfPiISR() INT_EDGE_FALLING
 #include "ssbtgpio.h"
-
 using namespace std;
 
 Application *application;
@@ -16,12 +14,10 @@ int main(int argc, char** argv) {
 	int error = 0, param = 0;
 	char yn = 'n';
 	bool valid = true;
-	//Application *application = new Application();
 	application = new Application();
 
 	if ( wiringPiISR (DAQSW, INT_EDGE_FALLING, &isrwrapper) < 0 ) {
 			cout << "Unable to setup ISR\n";
-			//exit(0); //let them play without it
 	}
 
 
@@ -43,7 +39,7 @@ int main(int argc, char** argv) {
 		cout << "disc: dxxxyyyxxxyyy\n";
 		cout << "wedge wxxxyyyxxxyyy\n";
 		cout << "START PROGRAM? (y/n) ";
-		cin >> yn; //any variable that wont be used again, its just a wait
+		cin >> yn;
 		if(yn == 'n'){
 			cout << "---------------------------------------------------------------\n";
 			exit(0);
