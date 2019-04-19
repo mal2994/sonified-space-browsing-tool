@@ -28,3 +28,6 @@ https://csound.com/download.html \
 WIRINGPI:
 http://wiringpi.com/download-and-install/ \
 `(pre-installed on Raspbian)`
+
+COMPILE:
+`g++ main.cpp application.cpp application.h rabbit.h rabbit.cpp user.h user.cpp ssbtsound.cpp ssbtsound.h ssbtgpio.cpp ssbtgpio.h constants.h pkg-config --libs allegro-5 allegro_primitives-5 -lcsound64 -lwiringPi`
