@@ -1,26 +1,20 @@
-check the pull requests for the most recent code!! the main branch contains what is stable.
-
 # sonified-space-browsing-tool
-in progress code that creates sound-emitting objects in a 5.1 surround space and allows a user to explore the space.
-one day, maybe an API.
-
-SSBT Release Notes March 22, 2019
-Applicable to PATCH 16 and after
+a prototype that creates sound-emitting objects in a 5.1 surround space and allows a user to explore the space.
 
 OVERVIEW:
-Ssbt will start, play sounds in 5.1, and identify gestures. If it does not, that is a problem dependent on your system.
-Wedge/disc isolation needs work. Teleport needs work. User io modes need work.
-In an attempt to aid the development process, user io modes were introduced before user functions were completed.
+Experiment with the effectiveness of mapping datasets to amplitude and panning parameters. This code may need work to run on your machine.
 
-
-SYSTEM REQUIREMENTS:
-Raspbian Stretch (Linux Kernal 4.14), Debian Stretch should be fine.
+SYSTEM RECOMMENDATIONS:
+Raspbian Stretch (Linux Kernal 4.14)
 Allegro 5.2
 Csound 6.12.0
+DiamondAudio 7.1 USB Sound Card (don't use SS-OUT channel)
+A DAQ circuit: 4-bit ADC, 2-channel analog MUX, a switch
 
 OPERATING SYSTEMS:
 Raspbian Stretch tests succeeded.
 Ubuntu Xerial Xerus tests failed, due to dependency Allegro 5.2 not supported by OS
+Microsoft Windows and MacOS not tested.
 
 ALLEGRO:
 https://liballeg.org/download.html
@@ -31,3 +25,7 @@ CSOUND:
 https://csound.com/download.html
 sudo apt install csound
 sudo apt install libcsnd-dev
+
+WIRINGPI:
+http://wiringpi.com/download-and-install/
+(pre-installed on Raspbian)
