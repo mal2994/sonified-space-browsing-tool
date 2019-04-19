@@ -15,12 +15,12 @@ OPERATING SYSTEMS:
 
 ALLEGRO:
 https://liballeg.org/download.html \
-`sudo apt install liballegro5`
+`sudo apt install liballegro5` \
 `sudo apt install liballegro5-dev` 
 
 CSOUND:
 https://csound.com/download.html \
-`sudo apt install csound`
+`sudo apt install csound`\
 `sudo apt install libcsnd-dev` 
 
 WIRINGPI:
