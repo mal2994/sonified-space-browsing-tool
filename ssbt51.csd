@@ -18,19 +18,19 @@ nchnls = 8
 
 ;;; SURROUND SOUND: VECTOR-BASED AMPLITUDE PANNING / ROOM CORRECTION ;;;
 idim	 = 2			                                              ; 2D not 3D
-ilsnum = 6			                                              ; 8 ch (2 dummies)
+ilsnum = 6			                                              ; 6 channel
 vbaplsinit idim, ilsnum,	288,	72,		0,		0,		216,	144		; initialize speaker angles for vector based amplitude panning
-;													ff-r,	ff-l,	cb-r,	cb-l,	ss-l,	ss-r	; these angles are "where are YOUR speakers"
+;													ff-r,	ff-l,	cb-r,	cb-l,	bs-l,	bs-r	; these angles are "where are YOUR speakers"
 																															; works for my soundcard anyway
 
 ;;; INITIALIZE RABBIT CHANNELS ;;;
-	chnset	1,		"r0distance"
+	chnset	0,		"r0distance"
 	chnset	90,		"r0angle"
-	chnset	1,		"r1distance"
+	chnset	0,		"r1distance"
 	chnset	270,	"r1angle"
-	chnset	1,		"r2distance"
+	chnset	0,		"r2distance"
 	chnset	180,	"r2angle"
-	chnset	1,		"r3distance"
+	chnset	0,		"r3distance"
 	chnset	180,	"r3angle"
 
 ;;; OTHER CHANNELS ;;;
@@ -48,7 +48,7 @@ kloopstart = 0                                          ; loop start point (alth
 kloopend = 13.24                                        ; loop end point (in seconds)
 kcrossfade = 0.00                                       ; 0.00 seconds crossfade
 
-if (ksong == 0.00000) kgoto floop0                      ; pick a parameter which links to each song 
+if (ksong == 0.00000) kgoto floop0                      ; pick a parameter which links to each song
 if (ksong == 1.00000) kgoto floop1
 
 floop0:
@@ -70,7 +70,7 @@ kloopstart = 0                                          ; loop start point (alth
 kloopend = 13.24                                        ; loop end point (in seconds)
 kcrossfade = 0.00                                       ; 0.00 seconds crossfade
 
-if (ksong == 0.00000) kgoto floop0                      ; pick a parameter which links to each song 
+if (ksong == 0.00000) kgoto floop0                      ; pick a parameter which links to each song
 if (ksong == 1.00000) kgoto floop1
 
 floop0:
@@ -92,7 +92,7 @@ kloopstart = 0                                          ; loop start point (alth
 kloopend = 13.24                                        ; loop end point (in seconds)
 kcrossfade = 0.00                                       ; 0.00 seconds crossfade
 
-if (ksong == 0.00000) kgoto floop0                      ; pick a parameter which links to each song 
+if (ksong == 0.00000) kgoto floop0                      ; pick a parameter which links to each song
 if (ksong == 1.00000) kgoto floop1
 
 floop0:
@@ -127,7 +127,7 @@ kloopstart = 0                                          ; loop start point (alth
 kloopend = 13.24                                        ; loop end point (in seconds)
 kcrossfade = 0.00                                       ; 0.00 seconds crossfade
 
-if (ksong == 0.00000) kgoto floop0                      ; pick a parameter which links to each song 
+if (ksong == 0.00000) kgoto floop0                      ; pick a parameter which links to each song
 if (ksong == 1.00000) kgoto floop1
 
 floop0:
@@ -151,7 +151,7 @@ kloopstart = 0                                          ; loop start point (alth
 kloopend = 13.24                                        ; loop end point (in seconds)
 kcrossfade = 0.00                                       ; 0.00 seconds crossfade
 
-if (ksong == 0.00000) kgoto floop0                      ; pick a parameter which links to each song 
+if (ksong == 0.00000) kgoto floop0                      ; pick a parameter which links to each song
 if (ksong == 1.00000) kgoto floop1
 
 floop0:
@@ -175,7 +175,7 @@ kloopstart = 0                                          ; loop start point (alth
 kloopend = 13.24                                        ; loop end point (in seconds)
 kcrossfade = 0.00                                       ; 0.00 seconds crossfade
 
-if (ksong == 0.00000) kgoto floop0                      ; pick a parameter which links to each song 
+if (ksong == 0.00000) kgoto floop0                      ; pick a parameter which links to each song
 if (ksong == 1.00000) kgoto floop1
 
 floop0:
@@ -199,7 +199,7 @@ kloopstart = 0                                          ; loop start point (alth
 kloopend = 13.24                                        ; loop end point (in seconds)
 kcrossfade = 0.00                                       ; 0.00 seconds crossfade
 
-if (ksong == 0.00000) kgoto floop0                      ; pick a parameter which links to each song 
+if (ksong == 0.00000) kgoto floop0                      ; pick a parameter which links to each song
 if (ksong == 1.00000) kgoto floop1
 
 floop0:
@@ -219,7 +219,7 @@ endin
 </CsInstruments>
 <CsScore>
 ;;; F TABLE CONTAINS WAVEFORMS ;;;                      ; makes fn table from gen01 in i-statement in score
-f 1  0 0  1 "mdrum_v_loop.wav"				0 0 0							
+f 1  0 0  1 "mdrum_v_loop.wav"				0 0 0
 f 2  0 0  1 "mbass_v_loop.wav"				0 0 0
 f 3  0 0  1 "mdrum_ack_loop_8bar.wav"	0 0 0
 f 4  0 0  1 "macc_c_loop.wav"					0 0 0
@@ -240,7 +240,7 @@ f 15 0 0  1 "swish.wav"               0 0 0
 ;;; I TABLE CONTAINS ARRANGEMENT DATA ;;;
 i 1 0 84600   1   8
 i 2 0 84600   2		9																			; p4 selects sample for song 0. p5 for song 1. etc.
-i 3 0 84600   3		3																		; if this is 60bpm, then ~1400minutes
+i 3 0 84600   3		3																			; if this is 60bpm, then ~1400minutes
 i 4 0 84600   4		11																		; instr 4 plays 1400 minutes of flooper2 function table 4...
 i 5 0 84600   5   12
 i 6 0 84600   6   13

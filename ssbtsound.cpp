@@ -1,12 +1,11 @@
 #include <csound/csound.hpp>
 #include <csound/csPerfThread.hpp>
 #include <iostream>
-#include <stdio.h>									// for sprintf()
+#include <stdio.h>	// for sprintf()
 #include <stdlib.h>
 #include "ssbtsound.h"
 #include "application.h"
 #include "constants.h"
-
 using namespace std;
 
 Ssbtsound::Ssbtsound(){
@@ -39,7 +38,6 @@ void Ssbtsound::compileCsound(bool* mode_flags){
 	}else if (mode_flags[SUR71_FLAG]){
 			csound->Compile("ssbt71.csd");
 	}
-	//csound->Compile("ssbt51.csd");
 }
 
 // MODIFICATION MEMBER FUNCTIONS //
@@ -57,7 +55,7 @@ void Ssbtsound::setAngleChn(int i, float a){
 
 void Ssbtsound::setDrumAckAmp(float a){
 	drumackamp = a;
-	csound->SetChannel("drumackamp", drumackamp);		// this channel isn't locked to metronome, especially "turn ons"
+	csound->SetChannel("drumackamp", drumackamp);		// this channel flips independent of others 
 }
 
 void Ssbtsound::setSwishAmp(float a){
@@ -72,10 +70,11 @@ void Ssbtsound::playAll(){
 	flipChannels(false);
 }
 
-void Ssbtsound::flipChannels(bool newsong){	// similar to allegro_flip_display...set em at different times then flip em all at once
-	char bufferD[10];		// todo would 11 be ok so we can do more than 9 rabbits?
-	char bufferA[7];		// todo would 8 be ok so we can do more than 9 rabbits?
-											// ^ to pass a channel name as string to csound
+// similar to allegro_flip_display...set em at different times then flip em all at once
+void Ssbtsound::flipChannels(bool newsong){
+//to pass a channel name as string to csound
+	char bufferD[10];
+	char bufferA[7];
 
 	for(int i = 0; i < NUMINSTR; i++){
 		sprintf(bufferD, "r%ddistance", i);
@@ -91,18 +90,14 @@ void Ssbtsound::flipChannels(bool newsong){	// similar to allegro_flip_display..
 
 	if(newsong){
 			song = (song+1)%NUMSONGS;
-//			cout << "cpp song: " << (float)song << "\n";
 			csound->SetChannel("song",(float)song);
 	}
-		/*}
-	}*/
-	//	cout << "ssbtsound flipped the channels.\n";
 }
 
 // CONSTANT MEMBER FUNCTIONS //
 int Ssbtsound::startPerformanceThread(){
 	perfThread->Play();
-	return 0; // todo should we error check?
+	return 0;
 }
 bool Ssbtsound::getCsWaitState(){
 	return cswaitstate;

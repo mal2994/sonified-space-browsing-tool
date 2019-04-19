@@ -7,12 +7,11 @@
 #include <algorithm> // for count()
 using namespace std;
 
-// Constructor
 SSBTGPIO::SSBTGPIO(){
 	datafile.open("dummy.txt");
 	lines_done = 0;
 }
-// Destructor
+
 SSBTGPIO::~SSBTGPIO(){
 	datafile.close();
 }
@@ -21,7 +20,6 @@ int SSBTGPIO::setUpPins(){
 	if(wiringPiSetup() == -1) return -1;
 	pinMode(MPLXR0, OUTPUT);
 	pinMode(MPLXR1, OUTPUT);
-//	pinMode(MPLXR2, OUTPUT);
 	pinMode(IN0, INPUT);
 	pinMode(IN1, INPUT);
 	pinMode(IN2, INPUT);
@@ -35,12 +33,10 @@ int SSBTGPIO::setUpPins(){
 	return 0; // no error
 }
 
-int SSBTGPIO::readADC(int chn){					// request one of five channels from mux, return integer value of 4-bit read 0-15
+// request one of five channels from mux, return integer value of 4-bit read 0-15
+int SSBTGPIO::readADC(int chn){
 	// select channel from multiplexer
-	if(chn == 4){
-		digitalWrite(MPLXR1,0);
-		digitalWrite(MPLXR0,0);
-	}else if(chn == 3){
+	if(chn == 3){
 		digitalWrite(MPLXR1,1);
 		digitalWrite(MPLXR0,1);
 	}else if(chn == 2){
@@ -90,19 +86,6 @@ void SSBTGPIO::incLinesDone(){
 	lines_done++;
 }
 
-/*int SSBTGPIO::initialLen(){
-	df_cur = datafile.tellg();
-	datafile.seekg(0, ios::beg);
-	df_begin = datafile.tellg();
-	datafile.seekg (0, ios::end);
-	df_end = datafile.tellg();
-	datafile.seekg(df_begin);
-	cout << "file length: " << df_end - df_begin << "\n";
-	numlines = count(istreambuf_iterator<char>(datafile), istreambuf_iterator<char>(), '\n');
-	cout << "numlines: " << numlines << "\n";
-	datafile.seekg(df_cur);
-}*/
-
 int SSBTGPIO::readFile(){
 	// how big is file now? did the DAQ hardware add more data points?
 	// iterate through entire file and count lines
@@ -112,9 +95,9 @@ int SSBTGPIO::readFile(){
 	datafile.seekg (0, ios::end);
 	df_end = datafile.tellg();
 	datafile.seekg(df_begin);
-	cout << "file length: " << df_end - df_cur << "\n";
+//	cout << "file length: " << df_end - df_cur << "\n";
 	numlines = count(istreambuf_iterator<char>(datafile), istreambuf_iterator<char>(), '\n') - lines_done;
-	cout << "numlines: " << numlines << "\n";
+//	cout << "numlines: " << numlines << "\n";
 	datafile.seekg(df_cur);
 
 	// get some points from the file and put them in point1 and point2
@@ -134,7 +117,6 @@ int SSBTGPIO::readFile(){
 }
 
 void SSBTGPIO::DAQisr(){
-	//cout << "INTERRUPT SERVICED\n";
 	DAQ_flag = !DAQ_flag;		// switch triggers isr despite position
 	if(DAQ_flag){
 		df_cur = datafile.tellg();
@@ -142,24 +124,4 @@ void SSBTGPIO::DAQisr(){
 		datafile << readADC(0) << ", " << readADC(1) << "\n";
 		datafile.seekg(df_cur);
 	}
-
-	// how many data items are left?
-	//df_cur = datafile.tellg();
-	//datafile.seekg (0, ios::end);
-	//df_end = datafile.tellg();
-	//numlines = count(istreambuf_iterator<char>(datafile), istreambuf_iterator<char>(), '\n') - lines_done;
-  //cout << numlines " - " << lines_done <<"\n";
-	//datafile.seekg(df_cur);
 }
-/*int main(){
-	SSBTGPIO ssbtgpio;
-	int val = 0;
-	if(ssbtgpio.setUpPins() == 1){
-		return -1;
-	}
-	while(1){
-		val = ssbtgpio.readChn(0);
-		delay(400);
-		cout << "chn0 = " << val << "\n";
-	}
-}*/

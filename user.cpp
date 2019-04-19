@@ -1,21 +1,16 @@
 #include <iostream>
 #include "user.h"
 #include "rabbit.h"
-//#include "application.h"
 #include "constants.h"
-//#include "ssbtsound.h" //never tried this
-
 using namespace std;
 
-// Constructor
 User::User(){
-   truex = 400;     //todo CENTERX CENTERY
-   truey = 200;
+   truex = CENTERX;
+   truey = CENTERY;
 }
-// Destructor
+
 User::~User(){}
 
-// MODIFICATION MEMBER FUNCTIONS //
 void User::setTrueX(int a){
 	truex = a;
 }
@@ -27,11 +22,8 @@ void User::setTrueY(int a){
 void User::teleport(int x, int y){
 	setTrueX(x);
 	setTrueY(y);
-//	cout << "User teleported." << "\n";
-	cout << "User coords: " << getTrueX() << ", " << getTrueY() << "\n";
 }
 
-/* CONSTANT MEMBER FUNCTIONS */
 int User::getTrueX(){
 	return truex;
 }
@@ -45,7 +37,6 @@ void User::activateInsideRabbits(Rabbit AllRabbits[]){
   if(!Disc1.isActivated() && !Wedge1.isActivated()){
     for (int i = 0; i<NUMRABBITS; i++){
       AllRabbits[i].activate(true);
-//      cout << "[activateInsideRabbits] AllRabbits["<<i<<"] rabbit_id " << AllRabbits[i].getRabbitId() << " truex " << AllRabbits[i].getTrueX() << " truey " << AllRabbits[i].getTrueY() << " distance_to_user " << AllRabbits[i].getDistanceToUser() << " angle_to_user " << AllRabbits[i].getAngleToUser() << "\n";
     }
   }
 
@@ -58,7 +49,6 @@ void User::activateInsideRabbits(Rabbit AllRabbits[]){
   		}else{
   			AllRabbits[i].activate(false);
   		}
-//      cout << "[activateInsideRabbits] AllRabbits["<<i<<"] rabbit_id " << AllRabbits[i].getRabbitId() << " truex " << AllRabbits[i].getTrueX() << " truey " << AllRabbits[i].getTrueY() << " distance_to_user " << AllRabbits[i].getDistanceToUser() << " angle_to_user " << AllRabbits[i].getAngleToUser() << "\n";
   	}
   }
 
@@ -71,10 +61,8 @@ void User::activateInsideRabbits(Rabbit AllRabbits[]){
       }else{
         AllRabbits[i].activate(false);
       }
-//      cout << "[activateInsideRabbits] AllRabbits["<<i<<"] rabbit_id " << AllRabbits[i].getRabbitId() << " truex " << AllRabbits[i].getTrueX() << " truey " << AllRabbits[i].getTrueY() << " distance_to_user " << AllRabbits[i].getDistanceToUser() << " angle_to_user " << AllRabbits[i].getAngleToUser() << "\n";
     }
   }else{
-//    cout << "[activateInsideRabbits] you dont have a disc wedge or no disc wedge all that stuff.\n";
   }
 }
 
@@ -95,14 +83,10 @@ void Disc::activate(bool flag){
 }
 
 void Disc::setRadii(int a, int b){
-	if(a < b)
-	{
-//		cout << "a<b" << endl;
+	if(a < b){
 		radius1 = a;
 		radius2 = b;
-	}else
-	{
-//		cout << "a>b" << endl;
+	}else{
 		radius1 = b;
 		radius2 = a;
 	}
@@ -137,14 +121,10 @@ void Wedge::activate(bool flag){
 }
 
 void Wedge::setAngles(int a, int b){
-	if(a < b)
-	{
-//		cout << "a<b" << endl;
+	if(a < b){
 		angle1 = a;
 		angle2 = b;
-	}else
-	{
-//		cout << "a>b" << endl;
+	}else{
 		angle1 = b;
 		angle2 = a;
 	}
