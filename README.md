@@ -15,19 +15,19 @@ A *prototype* that creates sound-emitting objects in a 5.1 surround space and al
 
 **DEPENDENCIES:**
 
-ALLEGRO:
+ALLEGRO: \
 https://liballeg.org/download.html \
 `sudo apt install liballegro5` \
 `sudo apt install liballegro5-dev` 
 
-CSOUND:
+CSOUND: \
 https://csound.com/download.html \
 `sudo apt install csound`\
 `sudo apt install libcsnd-dev` 
 
-WIRINGPI:
+WIRINGPI: \
 http://wiringpi.com/download-and-install/ \
 `(pre-installed on Raspbian)`
 
-COMPILE:
+COMPILE: \
 `g++ main.cpp application.cpp application.h rabbit.h rabbit.cpp user.h user.cpp ssbtsound.cpp ssbtsound.h ssbtgpio.cpp ssbtgpio.h constants.h pkg-config --libs allegro-5 allegro_primitives-5 -lcsound64 -lwiringPi`
