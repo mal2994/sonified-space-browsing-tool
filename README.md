@@ -32,7 +32,7 @@ http://wiringpi.com/download-and-install/ \
 COMPILE: \
 `g++ main.cpp application.cpp application.h rabbit.h rabbit.cpp user.h user.cpp ssbtsound.cpp ssbtsound.h ssbtgpio.cpp ssbtgpio.h constants.h pkg-config --libs allegro-5 allegro_primitives-5 -lcsound64 -lwiringPi`
 
-**SOME HELP GETTING THIS TO RUN**
+**SOME HELP GETTING THIS TO RUN** \
 It is likely that this code will take your entire day or longer to get up and running. The development team will not share the copyrighted audio files used in development. Read everything here before you try anything.
 
 AUDIO: You will need to cut some audio to 64 beats of 145 bpm (aka 16 measures 4/4 time) in mono. I recommend audacity and cambridge multitrack audio library. You will need four instruments and two songs (chorus and verse is fine). Enter in times from the keyboard and cut precisely. Modify the Csound program's F table to the proper filenames. Keep files in the working directory. It is recommended to use a metronome or any strict quarter note drum pattern for the drum acknowledge audio. 
@@ -41,5 +41,6 @@ INSTALLATION: Get all of the dependencies listed above. If you donot have a touc
 
 CSV DATABASES: Two numbers per line separated by a comma. No comma at the end of lines. Numbers must be within range [0,15] inclusive. End the file on a new line. Use pull request 25 (the demonstration code). You will have one sound emitting object and one sound listening object. Pull request 25 does work with DAQ circuits, but they will not be sonified in real-time. You may prefer it that way depending on your application.
 
-DAQ CIRCUITS: Use pull request 21 (video1). You will have four sound emitting objects and one sound listening object. The sound emitting objects will refresh in real-time. The "got the fox" earcon is present in all commits pull request 21 and after. <a href="https://trello-attachments.s3.amazonaws.com/5bb5860efb637c0ff845d12f/5ca38ff5678c046f6a84b3f7/ecdb25d5f8ca845ec71be37b53a4b396/schem.jpg">The circuit goes a little something like this.</a>
-<a href="https://randysdigitalportfolio.blogspot.com/2019/05/senior-project-scrapbook.html">We kept some screenshots for enjoyment.</a>
+DAQ CIRCUITS: Use pull request 21 (video1). You will have four sound emitting objects and one sound listening object. The sound emitting objects will refresh in real-time. The "got the fox" earcon is present in all commits pull request 21 and after. <a href="https://trello-attachments.s3.amazonaws.com/5bb5860efb637c0ff845d12f/5ca38ff5678c046f6a84b3f7/ecdb25d5f8ca845ec71be37b53a4b396/schem.jpg">The circuit goes a little something like this.</a> \
+To wrap up this Senior Project, the better screenshots, pictures, and videos were posted <a href="https://randysdigitalportfolio.blogspot.com/2019/05/senior-project-scrapbook.html">here.</a>
+
